@@ -1,0 +1,10 @@
+{
+    "config": {
+        "baseDir": "../../",
+        "webPackConfig": "./examples/smoke/webpack.config.js"
+    },
+    "scripts": {
+      "build": "cd $npm_package_config_baseDir && yarn webpack --mode=production --config $npm_package_config_webPackConfig",
+      "start": "cd $npm_package_config_baseDir && yarn webpack-dev-server --config $npm_package_config_webPackConfig --open"
+    }
+}

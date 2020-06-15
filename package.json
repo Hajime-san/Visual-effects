@@ -1,0 +1,18 @@
+{
+  "name": "visual-effects",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:Hajime-san/Visual-effects.git",
+  "author": "Hajime-san <utd.c.r.d.s.a@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "three": "0.117.0"
+  },
+  "devDependencies": {
+    "ts-loader": "^7.0.1",
+    "typescript": "^3.8.3",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.10.3"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+      "module": "amd",
+      "sourceMap": true,
+      "target": "es5",
+      "outDir": "dist",
+      "lib": [
+          "dom",
+          "es2015"
+      ],
+      "moduleResolution": "node",
+      "resolveJsonModule": true,
+      "esModuleInterop": true
+  },
+  // "include": [
+  //     "src/**/*"
+  // ],
+}
