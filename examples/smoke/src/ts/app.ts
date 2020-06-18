@@ -1,4 +1,5 @@
 import * as THREE from "../../../../node_modules/three";
+import { OrbitControls } from ',./../../node_modules/three/examples/jsm/controls/OrbitControls'
 
 let camera: THREE.PerspectiveCamera,
   scene: THREE.Scene,
@@ -9,6 +10,8 @@ let camera: THREE.PerspectiveCamera,
   // mesh: THREE.Mesh,
   uvAnimation: FlipBook,
   time: THREE.Clock;
+
+const frac = (float: number) => float % 1;
 
 class FlipBook {
   private texture: THREE.Texture;
@@ -25,9 +28,15 @@ class FlipBook {
     this.column = column;
     this.row = row;
     this.playingFrame = playingFrame;
-    this.numberOfFrame = numberOfFrame;
 
-    this.texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    if (typeof numberOfFrame === 'undefined' && column === row) {
+      this.numberOfFrame = column * row;
+    } else {
+      this.numberOfFrame = numberOfFrame;
+    }
+
+
+    this.texture.wrapS = this.texture.wrapT = THREE.RepeatWrapping;
     this.texture.repeat.set( 1 / this.column, 1 / this.row );
 
     this.currentDelta = 0;
@@ -48,7 +57,11 @@ class FlipBook {
         this.currentIndex = 0;
         const currentColumn = this.currentIndex % this.column;
         this.texture.offset.x = currentColumn / this.column;
-        const currentRow = Math.floor( this.currentIndex / this.column );
+
+
+        const currentRow = Math.floor( this.currentIndex / this.column * this.column );
+        //const currentRow = Math.floor(this.currentIndex / this.column);
+
         this.texture.offset.y = currentRow / this.row;
 
     }
@@ -58,7 +71,15 @@ class FlipBook {
 const init = () => {
   const container = document.getElementById("canvas");
   camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
-  camera.position.z = 50;
+  camera.position.set(0, 30, 100);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  //renderer.setClearColor(0x000000);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  container.appendChild(renderer.domElement);
+
+  const controls = new OrbitControls( camera, renderer.domElement );
 
   scene = new THREE.Scene();
 
@@ -70,8 +91,31 @@ const init = () => {
   textureLoader = new THREE.TextureLoader();
 
   const texture = textureLoader.load("./assets/T_Smoke_SubUV.png");
+  const texture2 = textureLoader.load("./assets/T_Smoke_Tiled_D.jpg");
 
-  uvAnimation = new FlipBook( texture, 8, 8, 64, 70 );
+  const meshFloor = new THREE.Mesh(
+    new THREE.BoxGeometry(200, 0.1, 200),
+    new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 0, metalness: 0.5 })
+  );
+  scene.add(meshFloor);
+
+  const meshCube = new THREE.Mesh(
+    new THREE.SphereGeometry(10,10,10),
+    new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 0, metalness: 0.5 })
+  );
+  meshCube.position.set(30, 20, 5);
+  scene.add(meshCube);
+
+
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+  directionalLight.position.set(1, 100, 10);
+  scene.add(directionalLight);
+  const pointLightHelper = new THREE.DirectionalLightHelper(directionalLight, 10);
+  scene.add(pointLightHelper);
+
+
+
+  uvAnimation = new FlipBook( texture, 8, 8, 64 );
 
   let vertices = [];
 
@@ -79,33 +123,33 @@ const init = () => {
     const x = 1;
     const y = 1;
     const z = 1;
-
     vertices.push(x, y, z);
   }
 
-  geometry.setAttribute("position",new THREE.Float32BufferAttribute(vertices, 3));
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
 
   material = new THREE.PointsMaterial({
     size: 50,
     map: texture,
     blending: THREE.AdditiveBlending,
-    depthTest: false,
+    depthTest: true,
     transparent: true,
+    alphaMap: texture,
+    blendDstAlpha: 100,
     sizeAttenuation: true
   });
 
   const particles = new THREE.Points(geometry, material);
 
+  particles.translateY(20);
+
   scene.add(particles);
 
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setClearColor(0x000000);
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  container.appendChild(renderer.domElement);
 
   window.addEventListener("resize", onWindowResize, false);
 };
+
+let update = 0;
 
 const animate = () => {
   requestAnimationFrame(animate);
@@ -115,10 +159,21 @@ const animate = () => {
   uvAnimation.update(1000 * delta);
 
 
-  for (let i = 0; i < 10; i++) {
-    geometry.attributes.position.setXYZ(i, Math.random() * 10 - 5, i + 10 , Math.random() * 10 - 5)
+  // for (let i = 0; i < 10; i++) {
+  //   geometry.attributes.position.setXYZ(i, Math.random() * 100 - 50, i + 10 , Math.random() * 100 - 50)
+  // }
 
-  }
+
+  // if(material.opacity < 0.01) {
+  //   material.opacity = 1;
+  //   update = 0;
+  // } else {
+  //   material.opacity -= 0.01;
+  //   update += 1;
+  //   geometry.attributes.position.setY(0, update);
+  // }
+
+  //geometry.attributes.position.needsUpdate = true;
 
   renderer.render(scene, camera);
 };

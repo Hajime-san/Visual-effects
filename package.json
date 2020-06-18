@@ -6,7 +6,7 @@
   "author": "Hajime-san <utd.c.r.d.s.a@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "three": "0.117.0"
+    "three": "0.117.1"
   },
   "devDependencies": {
     "ts-loader": "^7.0.1",
