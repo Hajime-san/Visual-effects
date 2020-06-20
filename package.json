@@ -1,14 +1,34 @@
 {
   "name": "visual-effects",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "bundle.js",
   "repository": "git@github.com:Hajime-san/Visual-effects.git",
   "author": "Hajime-san <utd.c.r.d.s.a@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "build": "yarn webpack --mode=production",
+    "start": "yarn webpack-dev-server --open"
+  },
   "dependencies": {
     "three": "0.117.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.7.0",
+    "@babel/preset-env": "^7.7.0",
+    "@typescript-eslint/eslint-plugin": "^2.8.0",
+    "@typescript-eslint/parser": "^2.8.0",
+    "babel-loader": "^8.0.0",
+    "browser-sync": "^2.26.7",
+    "eslint": "^6.7.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-loader": "^3.0.2",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-prettier": "^3.1.1",
+    "husky": "^4.2.3",
+    "lint-staged": "^10.1.1",
+    "prettier": "^1.19.1",
+    "tsconfig-paths": "^3.9.0",
     "ts-loader": "^7.0.1",
     "typescript": "^3.8.3",
     "webpack": "^4.43.0",

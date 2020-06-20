@@ -1,0 +1,60 @@
+{
+    "env": {
+        "browser": true,
+        "node": true,
+        "es6": true
+    },
+    "extends": [
+        "airbnb-base",
+        // "plugin:@typescript-eslint/recommended",
+        "plugin:import/errors",
+        "plugin:import/warnings",
+        "plugin:import/typescript",
+        "plugin:prettier/recommended",
+        "prettier/@typescript-eslint"
+    ],
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly"
+    },
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+        //"project": "./tsconfig.json"  // bad performance
+    },
+    "plugins": [
+        "@typescript-eslint",
+        "prettier"
+    ],
+    // overwrite rules on "extends"
+    "rules": {
+        "prettier/prettier": [
+            "warn", {
+                "singleQuote": true,
+                "bracketSpacing": false
+            }
+        ],
+        "no-unused-vars": "warn",
+        "no-use-before-define": "warn",
+        "import/prefer-default-export": "off",
+        "import/newline-after-import": "off",
+        "no-console": "off",
+        "no-unexpected-multiline": "error",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "comma-style": [
+            1,
+            "last"
+        ],
+        "import/extensions": [
+            "error",
+            "ignorePackages",
+            {
+              "js": "never",
+              "jsx": "never",
+              "ts": "never",
+              "tsx": "never"
+            }
+        ]
+    }
+}
