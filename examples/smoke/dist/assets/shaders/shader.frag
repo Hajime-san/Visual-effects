@@ -3,19 +3,30 @@
 
 varying vec2 vUv;
 
-uniform sampler2D uTex;
-uniform sampler2D uTex2;
+uniform sampler2D loopAnimationTexture;
+uniform sampler2D baseColorTexture;
 uniform float time;
 
 void main() {
 
-    float frame = 16.0;
+    float currentIndex = floor(fract(time * 2.0) * COLUMN * ROW);
 
-    float offsetX = (vUv.x + floor(time * frame)) / COLUMN;
-    float offsetY = (vUv.y + floor(time * frame)) / COLUMN;
+    vec2 size = vec2( 1.0 / COLUMN, 1.0 / ROW);
 
-    vec4 color = texture2D( uTex, vec2(offsetX, offsetY) ).rgba;
-    vec3 color2 = texture2D( uTex2, vec2(offsetX, offsetY) ).rgb;
+    float col = mod(currentIndex, COLUMN);
+    float row = floor(currentIndex / ROW);
+
+    vec2 uvPos = vec2(col, row);
+
+    vec2 pattern = size * vUv;
+
+    vec2 normalizedPos = size * uvPos;
+
+    vec2 animatedUv = pattern + normalizedPos;
+
+
+    vec4 color = texture2D( loopAnimationTexture, animatedUv ).rgba;
+    vec3 color2 = texture2D( baseColorTexture, animatedUv ).rgb;
     vec4 finalColor = vec4(color.rgb + color2, color.a);
 
     gl_FragColor = finalColor;

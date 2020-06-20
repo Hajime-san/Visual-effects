@@ -4,15 +4,11 @@ import {OrbitControls} from ',./../../node_modules/three/examples/jsm/controls/O
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
-let geometry: THREE.BufferGeometry;
-let material: THREE.PointsMaterial;
-// let material2: THREE.PointsMaterial;
-let mat: THREE.ShaderMaterial;
+let planeGeometry: THREE.PlaneGeometry;
+let shaderMaterial: THREE.ShaderMaterial;
+let partcicles: THREE.Mesh;
 let textureLoader: THREE.TextureLoader;
 let uniforms: any;
-// mesh: THREE.Mesh,
-let uvAnimation: FlipBook;
-let uvAnimation2: FlipBook;
 let time: number;
 let delta: THREE.Clock;
 
@@ -102,12 +98,10 @@ const init = async () => {
 
     delta = new THREE.Clock();
 
-    geometry = new THREE.BufferGeometry();
-
     textureLoader = new THREE.TextureLoader();
 
-    const texture = textureLoader.load('./assets/images/T_Smoke_SubUV.png');
-    const texture2 = textureLoader.load('./assets/images/T_Smoke_Tiled_D.jpg');
+    const loopAnimationTexture = textureLoader.load('./assets/images/T_Smoke_SubUV.png');
+    const baseColorTexture = textureLoader.load('./assets/images/T_Smoke_Tiled_D.jpg');
 
     const meshFloor = new THREE.Mesh(
         new THREE.BoxGeometry(200, 0.1, 200),
@@ -133,47 +127,12 @@ const init = async () => {
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(1, 100, 10);
     scene.add(directionalLight);
-    // const pointLightHelper = new THREE.DirectionalLightHelper(directionalLight, 10);
-    // scene.add(pointLightHelper);
 
-    uvAnimation = new FlipBook(texture, 8, 8, 64);
-
-    uvAnimation2 = new FlipBook(texture2, 8, 8, 64);
-
-    const vertices = [];
-
-    for (let i = 0; i < 1; i += 1) {
-        const x = 1;
-        const y = 1;
-        const z = 1;
-        vertices.push(x, y, z);
-    }
-
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-
-    const geo = new THREE.PlaneGeometry(40, 40);
-
-    material = new THREE.PointsMaterial({
-        size: 50,
-        map: texture,
-        blending: THREE.AdditiveBlending,
-        depthTest: true,
-        transparent: true,
-        sizeAttenuation: true,
-    });
-
-    // material2 = new THREE.PointsMaterial({
-    //     size: 50,
-    //     map: texture2,
-    //     blending: THREE.MultiplyBlending,
-    //     depthTest: true,
-    //     transparent: true,
-    //     sizeAttenuation: true,
-    // });
+    planeGeometry = new THREE.PlaneGeometry(40, 40);
 
     uniforms = {
-        uTex: {value: texture},
-        uTex2: {value: texture2},
+        loopAnimationTexture: {value: loopAnimationTexture},
+        baseColorTexture: {value: baseColorTexture},
         uFixAspect: {
             value: 1 / 1,
         },
@@ -184,7 +143,7 @@ const init = async () => {
 
     const shaders = await loadShaders();
 
-    mat = new THREE.ShaderMaterial({
+    shaderMaterial = new THREE.ShaderMaterial({
         uniforms,
         vertexShader: shaders[0].vertex,
         fragmentShader: shaders[0].fragment,
@@ -192,19 +151,12 @@ const init = async () => {
         transparent: true,
     });
 
-    const particles = new THREE.Points(geometry, material);
+    partcicles = new THREE.Mesh(planeGeometry, shaderMaterial);
 
-    particles.translateX(-50);
-    particles.translateY(20);
+    partcicles.translateY(20);
+    partcicles.translateZ(0);
 
-    scene.add(particles);
-
-    const mesh = new THREE.Mesh(geo, mat);
-
-    mesh.translateY(20);
-    mesh.translateZ(0);
-
-    scene.add(mesh);
+    scene.add(partcicles);
 
     window.addEventListener('resize', onWindowResize, false);
 };
@@ -213,10 +165,6 @@ const animate = () => {
     requestAnimationFrame(animate);
 
     const frame = delta.getDelta();
-
-    uvAnimation.update(1000 * frame);
-
-    uvAnimation2.update(1000 * frame);
 
     // for (let i = 0; i < 10; i += 1) {
     //   geometry.attributes.position.setXYZ(i, Math.random() * 100 - 50, i + 10 , Math.random() * 100 - 50)

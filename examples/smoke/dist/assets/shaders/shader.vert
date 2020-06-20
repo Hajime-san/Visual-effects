@@ -1,8 +1,6 @@
 varying vec2 vUv;
 
 uniform float uFixAspect;
-uniform sampler2D uTex;
-uniform sampler2D uTex2;
 
 void main() {
     vUv = uv - .5;
