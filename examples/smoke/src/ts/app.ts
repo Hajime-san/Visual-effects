@@ -139,6 +139,16 @@ const init = async () => {
         time: {
             value: 0.0,
         },
+        COLUMN: {
+            value: 8.0,
+        },
+        ROW: {
+            value: 8.0,
+        },
+        scale: {
+            type: 'v3',
+            value: new THREE.Vector3(1, 1, 1),
+        },
     };
 
     const shaders = await loadShaders();

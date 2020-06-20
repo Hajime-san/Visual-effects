@@ -1,33 +1,36 @@
-#define COLUMN 8.0
-#define ROW 8.0
-
 varying vec2 vUv;
 
 uniform sampler2D loopAnimationTexture;
 uniform sampler2D baseColorTexture;
+uniform float COLUMN;
+uniform float ROW;
 uniform float time;
 
 void main() {
 
-    float currentIndex = floor(fract(time * 2.0) * COLUMN * ROW);
+    float sumFlip = COLUMN * ROW;
 
-    vec2 size = vec2( 1.0 / COLUMN, 1.0 / ROW);
+    float currentIndex = floor(fract(time * 2.0) * sumFlip);
+
+    vec2 flipSize = vec2( 1.0 / COLUMN, 1.0 / ROW);
 
     float col = mod(currentIndex, COLUMN);
     float row = floor(currentIndex / ROW);
 
-    vec2 uvPos = vec2(col, row);
+    vec2 currentPosition = vec2(col, row);
 
-    vec2 pattern = size * vUv;
+    vec2 pattern = flipSize * vUv;
 
-    vec2 normalizedPos = size * uvPos;
+    vec2 normalizedPosition = flipSize * currentPosition;
 
-    vec2 animatedUv = pattern + normalizedPos;
+    vec2 animatedUv = pattern + normalizedPosition;
 
 
-    vec4 color = texture2D( loopAnimationTexture, animatedUv ).rgba;
-    vec3 color2 = texture2D( baseColorTexture, animatedUv ).rgb;
-    vec4 finalColor = vec4(color.rgb + color2, color.a);
+    vec4 loopTex = texture2D( loopAnimationTexture, animatedUv ).rgba;
+    vec4 baseColorTex = vec4( texture2D( baseColorTexture, animatedUv ).rgb, 1.0);
+    float alphaChannel = loopTex.a;
+    vec3 additiveBlendColor = loopTex.rgb + baseColorTex.rgb;
+    vec4 finalColor = vec4(additiveBlendColor, alphaChannel);
 
     gl_FragColor = finalColor;
 }

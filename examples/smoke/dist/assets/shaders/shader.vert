@@ -1,11 +1,36 @@
 varying vec2 vUv;
 
 uniform float uFixAspect;
+uniform vec3 scale;
+uniform float time;
 
 void main() {
+
     vUv = uv - .5;
     vUv.y *= uFixAspect;
     vUv += .5;
 
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( position , 1.0);
+    /** billborad mesh with vertex shader
+    * https://stackoverflow.com/questions/24259404/how-to-apply-custom-shader-to-sprite-in-three-js
+    */
+
+    vUv = uv;
+    float rotation = 0.0;
+
+    vec3 alignedPosition = vec3(position.x * scale.x, position.y * scale.y, position.z*scale.z);
+
+    vec2 pos = alignedPosition.xy;
+
+    vec2 rotatedPosition;
+    rotatedPosition.x = cos( rotation ) * alignedPosition.x - sin( rotation ) * alignedPosition.y;
+    rotatedPosition.y = sin( rotation ) * alignedPosition.x + cos( rotation ) * alignedPosition.y;
+
+    vec4 finalPosition;
+
+    finalPosition = modelViewMatrix * vec4( 0.0, 0.0, 0.0, 1.0 );
+    finalPosition.xy += rotatedPosition;
+    finalPosition = projectionMatrix * finalPosition;
+
+    gl_Position =  finalPosition;
+
 }
