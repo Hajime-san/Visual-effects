@@ -25,12 +25,12 @@ const loadShaders = async () => {
 };
 
 const init = async () => {
+    // intial settings
     const container = document.getElementById('canvas');
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
-    camera.position.set(0, 30, 50);
+    camera.position.set(0, 20, 50);
 
     renderer = new THREE.WebGLRenderer({antialias: true});
-    // renderer.setClearColor(0x000000);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);
@@ -43,11 +43,9 @@ const init = async () => {
 
     delta = new THREE.Clock();
 
-    textureLoader = new THREE.TextureLoader();
+    window.addEventListener('resize', onWindowResize, false);
 
-    const loopAnimationTexture = textureLoader.load('./assets/images/T_Smoke_SubUV.png');
-    const baseColorTexture = textureLoader.load('./assets/images/T_Smoke_Tiled_D.jpg');
-
+    // floor
     const meshFloor = new THREE.Mesh(
         new THREE.BoxGeometry(200, 0.1, 200),
         new THREE.MeshStandardMaterial({
@@ -58,6 +56,7 @@ const init = async () => {
     );
     scene.add(meshFloor);
 
+    // cube
     const meshCube = new THREE.Mesh(
         new THREE.SphereGeometry(10, 10, 10),
         new THREE.MeshStandardMaterial({
@@ -66,13 +65,20 @@ const init = async () => {
             metalness: 0.5,
         })
     );
-    meshCube.position.set(-30, 20, 0);
+    meshCube.position.set(-30, 10, 0);
     scene.add(meshCube);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(1, 100, 10);
     scene.add(directionalLight);
 
+    // load textures
+    textureLoader = new THREE.TextureLoader();
+
+    const loopAnimationTexture = textureLoader.load('./assets/images/T_Smoke_SubUV.png');
+    const baseColorTexture = textureLoader.load('./assets/images/T_Smoke_Tiled_D.jpg');
+
+    // set uniform variables
     uniforms = {
         loopAnimationTexture: {value: loopAnimationTexture},
         baseColorTexture: {value: baseColorTexture},
@@ -100,6 +106,7 @@ const init = async () => {
         },
     };
 
+    // set shader
     const shaders = await loadShaders();
 
     shaderMaterial = new THREE.ShaderMaterial({
@@ -110,35 +117,25 @@ const init = async () => {
         transparent: true,
     });
 
-    // for (let i = 0; i < 10; i += 1) {
-    //     planeGeometry = new THREE.PlaneGeometry(20, 20);
-    //     partcicles = new THREE.Mesh(planeGeometry, shaderMaterial);
-
-    //     partcicles.position.set(0, Math.random() * 20 - 10 + 20, 0);
-    //     partcicles.rotateZ(Math.random() * 6);
-
-    //     scene.add(partcicles);
-    // }
-
+    // frame mix animation particle
     planeGeometry = new THREE.PlaneGeometry(20, 20);
 
     partcicles = new THREE.Mesh(planeGeometry, shaderMaterial);
 
-    partcicles.position.set(0, 20, 0);
+    partcicles.position.set(0, 10, 0);
 
     scene.add(partcicles);
 
-    const secondGeometry = new THREE.PlaneGeometry(20, 20);
+    // no-mix
+    const nonMixFrameGeometry = new THREE.PlaneGeometry(20, 20);
 
     uniforms.mixNextFrame.value = 0;
 
-    const secondPartcicles = new THREE.Mesh(secondGeometry, shaderMaterial);
+    const noMixFrameParticles = new THREE.Mesh(nonMixFrameGeometry, shaderMaterial);
 
-    secondPartcicles.position.set(20, 20, 0);
+    noMixFrameParticles.position.set(25, 10, 0);
 
-    scene.add(secondPartcicles);
-
-    window.addEventListener('resize', onWindowResize, false);
+    scene.add(noMixFrameParticles);
 };
 
 const animate = () => {
@@ -146,21 +143,7 @@ const animate = () => {
 
     const frame = delta.getDelta();
 
-    // for (let i = 0; i < 10; i += 1) {
-    //     partcicles.position.set(0, i, 0);
-    // }
-
-    // if (shaderMaterial.opacity < 0.01) {
-    //     shaderMaterial.opacity = 1;
-    // } else {
-    //     shaderMaterial.opacity -= 0.01;
-    // }
-
-    // geometry.attributes.position.needsUpdate = true;
-
     time += frame;
-
-    // partcicles.position.setY(time * 5);
 
     uniforms.time.value = time;
 
