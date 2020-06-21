@@ -1,5 +1,5 @@
-import * as THREE from '../../../../node_modules/three';
-import {OrbitControls} from ',./../../node_modules/three/examples/jsm/controls/OrbitControls';
+import * as THREE from 'three';
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
@@ -72,7 +72,6 @@ class FlipBook {
             this.texture.offset.x = currentColumn / this.column;
 
             const currentRow = Math.floor((this.currentIndex / this.column) * this.column);
-            // const currentRow = Math.floor(this.currentIndex / this.column);
 
             this.texture.offset.y = currentRow / this.row;
         }
@@ -82,7 +81,7 @@ class FlipBook {
 const init = async () => {
     const container = document.getElementById('canvas');
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
-    camera.position.set(0, 30, 100);
+    camera.position.set(0, 30, 50);
 
     renderer = new THREE.WebGLRenderer({antialias: true});
     // renderer.setClearColor(0x000000);
@@ -121,14 +120,12 @@ const init = async () => {
             metalness: 0.5,
         })
     );
-    meshCube.position.set(30, 20, 5);
+    meshCube.position.set(-30, 20, 0);
     scene.add(meshCube);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(1, 100, 10);
     scene.add(directionalLight);
-
-    planeGeometry = new THREE.PlaneGeometry(40, 40);
 
     uniforms = {
         loopAnimationTexture: {value: loopAnimationTexture},
@@ -139,11 +136,17 @@ const init = async () => {
         time: {
             value: 0.0,
         },
+        speed: {
+            value: 1.0,
+        },
+        mixNextFrame: {
+            value: 1,
+        },
         COLUMN: {
-            value: 8.0,
+            value: 8,
         },
         ROW: {
-            value: 8.0,
+            value: 8,
         },
         scale: {
             type: 'v3',
@@ -161,12 +164,33 @@ const init = async () => {
         transparent: true,
     });
 
+    // for (let i = 0; i < 10; i += 1) {
+    //     planeGeometry = new THREE.PlaneGeometry(20, 20);
+    //     partcicles = new THREE.Mesh(planeGeometry, shaderMaterial);
+
+    //     partcicles.position.set(0, Math.random() * 20 - 10 + 20, 0);
+    //     partcicles.rotateZ(Math.random() * 6);
+
+    //     scene.add(partcicles);
+    // }
+
+    planeGeometry = new THREE.PlaneGeometry(20, 20);
+
     partcicles = new THREE.Mesh(planeGeometry, shaderMaterial);
 
-    partcicles.translateY(20);
-    partcicles.translateZ(0);
+    partcicles.position.set(0, 20, 0);
 
     scene.add(partcicles);
+
+    const secondGeometry = new THREE.PlaneGeometry(20, 20);
+
+    uniforms.mixNextFrame.value = 0;
+
+    const secondPartcicles = new THREE.Mesh(secondGeometry, shaderMaterial);
+
+    secondPartcicles.position.set(20, 20, 0);
+
+    scene.add(secondPartcicles);
 
     window.addEventListener('resize', onWindowResize, false);
 };
@@ -177,28 +201,27 @@ const animate = () => {
     const frame = delta.getDelta();
 
     // for (let i = 0; i < 10; i += 1) {
-    //   geometry.attributes.position.setXYZ(i, Math.random() * 100 - 50, i + 10 , Math.random() * 100 - 50)
+    //     partcicles.position.set(0, i, 0);
     // }
 
-    // if(material.opacity < 0.01) {
-    //   material.opacity = 1;
-    //   update = 0;
+    // if (shaderMaterial.opacity < 0.01) {
+    //     shaderMaterial.opacity = 1;
     // } else {
-    //   material.opacity -= 0.01;
-    //   update += 1;
-    //   geometry.attributes.position.setY(0, update);
+    //     shaderMaterial.opacity -= 0.01;
     // }
 
     // geometry.attributes.position.needsUpdate = true;
 
     time += frame;
 
+    // partcicles.position.setY(time * 5);
+
     uniforms.time.value = time;
 
     renderer.render(scene, camera);
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    init();
+document.addEventListener('DOMContentLoaded', async () => {
+    await init();
     animate();
 });
