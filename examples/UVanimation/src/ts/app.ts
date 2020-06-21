@@ -24,60 +24,6 @@ const loadShaders = async () => {
     return Promise.all([{vertex: vertexShader, fragment: fragmentShader}]);
 };
 
-class FlipBook {
-    private texture: THREE.Texture;
-
-    private column: number;
-
-    private row: number;
-
-    private playingFrame: number;
-
-    private numberOfFrame: number;
-
-    private currentDelta: number;
-
-    private currentIndex: number;
-
-    constructor(texture: THREE.Texture, column: number, row: number, playingFrame: number, numberOfFrame?: number) {
-        this.texture = texture;
-        this.column = column;
-        this.row = row;
-        this.playingFrame = playingFrame;
-
-        if (typeof numberOfFrame === 'undefined' && column === row) {
-            this.numberOfFrame = column * row;
-        } else {
-            this.numberOfFrame = numberOfFrame;
-        }
-
-        this.texture.wrapS = THREE.RepeatWrapping;
-        this.texture.wrapT = THREE.RepeatWrapping;
-        this.texture.repeat.set(1 / this.column, 1 / this.row);
-
-        this.currentDelta = 0;
-
-        this.currentIndex = 0;
-    }
-
-    update(deltaTime: number) {
-        this.currentDelta += deltaTime;
-
-        while (this.currentDelta > this.playingFrame) {
-            this.currentDelta -= this.playingFrame;
-            this.currentIndex += 1;
-
-            if (this.currentIndex === this.numberOfFrame) this.currentIndex = 0;
-            const currentColumn = this.currentIndex % this.column;
-            this.texture.offset.x = currentColumn / this.column;
-
-            const currentRow = Math.floor((this.currentIndex / this.column) * this.column);
-
-            this.texture.offset.y = currentRow / this.row;
-        }
-    }
-}
-
 const init = async () => {
     const container = document.getElementById('canvas');
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);

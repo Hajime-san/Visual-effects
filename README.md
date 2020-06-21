@@ -10,3 +10,7 @@
 - build project
 
 `node getTargetPath.js b`
+
+
+## License
+MIT
