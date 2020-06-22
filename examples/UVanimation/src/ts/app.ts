@@ -24,6 +24,37 @@ const loadShaders = async () => {
     return Promise.all([{vertex: vertexShader, fragment: fragmentShader}]);
 };
 
+// text sprite
+const labelMaterial = (text: string) => {
+    const canvas = document.createElement('canvas');
+
+    canvas.width = 512;
+    canvas.height = 512;
+
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const fontSize = 36;
+
+    ctx.fillStyle = '#000';
+    ctx.font = `${fontSize}pt Georgia`;
+    // ctx.textAlign = 'center';
+
+    const textWidth = Math.floor(Number(ctx.measureText(text).width));
+
+    const horizontalCenter = canvas.width / 2 - textWidth / 2;
+
+    const verticalCenter = canvas.height / 2 + fontSize / 2;
+
+    ctx.fillText(text, horizontalCenter, verticalCenter);
+
+    const map = new THREE.CanvasTexture(canvas);
+
+    return new THREE.SpriteMaterial({map});
+};
+
 const init = async () => {
     // intial settings
     const container = document.getElementById('canvas');
@@ -126,6 +157,12 @@ const init = async () => {
 
     scene.add(partcicles);
 
+    const spriteMixedFrameText = new THREE.Sprite(labelMaterial('mixed two frame'));
+    spriteMixedFrameText.position.set(0, 25, 0);
+    spriteMixedFrameText.scale.set(10, 10, 10);
+
+    scene.add(spriteMixedFrameText);
+
     // no-mix
     const nonMixFrameGeometry = new THREE.PlaneGeometry(20, 20);
 
@@ -136,6 +173,12 @@ const init = async () => {
     noMixFrameParticles.position.set(25, 10, 0);
 
     scene.add(noMixFrameParticles);
+
+    const spriteSingleFrameText = new THREE.Sprite(labelMaterial('single frame'));
+    spriteSingleFrameText.position.set(25, 25, 0);
+    spriteSingleFrameText.scale.set(10, 10, 10);
+
+    scene.add(spriteSingleFrameText);
 };
 
 const animate = () => {
