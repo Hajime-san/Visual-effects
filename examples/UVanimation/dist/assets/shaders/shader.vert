@@ -1,14 +1,8 @@
 varying vec2 vUv;
 
-//uniform float uFixAspect;
 uniform vec3 scale;
-uniform float time;
 
 void main() {
-
-    // vUv = uv - .5;
-    // vUv.y *= uFixAspect;
-    // vUv += .5;
 
     /** billborad mesh with vertex shader
     * https://stackoverflow.com/questions/24259404/how-to-apply-custom-shader-to-sprite-in-three-js

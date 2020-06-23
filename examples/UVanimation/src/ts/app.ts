@@ -6,10 +6,14 @@ let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
 let planeGeometry: THREE.PlaneGeometry;
 let shaderMaterial: THREE.ShaderMaterial;
-let partcicles: THREE.Mesh;
+let singleSmoke: THREE.Mesh;
+let smokeParticlesWrapper: THREE.Group;
+let velocities: Array<THREE.Vector2>;
+let smokeParticleMaterial: THREE.ShaderMaterial;
 let textureLoader: THREE.TextureLoader;
 let uniforms: any;
 let time: number;
+let particleUniforms: any;
 let delta: THREE.Clock;
 
 const onWindowResize = () => {
@@ -21,7 +25,8 @@ const onWindowResize = () => {
 const loadShaders = async () => {
     const vertexShader = await fetch('./assets/shaders/shader.vert').then(res => res.text());
     const fragmentShader = await fetch('./assets/shaders/shader.frag').then(res => res.text());
-    return Promise.all([{vertex: vertexShader, fragment: fragmentShader}]);
+    const smokeParticleFrag = await fetch('./assets/shaders/smokeParticles.frag').then(res => res.text());
+    return Promise.all([{vertex: vertexShader, fragment: fragmentShader, smokeParticleFragment: smokeParticleFrag}]);
 };
 
 // text sprite
@@ -55,6 +60,10 @@ const labelMaterial = (text: string) => {
     return new THREE.SpriteMaterial({map});
 };
 
+const rangedRandom = (min: number, max: number) => {
+    return Math.random() * (max - min) + min;
+};
+
 const init = async () => {
     // intial settings
     const container = document.getElementById('canvas');
@@ -74,6 +83,8 @@ const init = async () => {
 
     delta = new THREE.Clock();
 
+    velocities = [];
+
     window.addEventListener('resize', onWindowResize, false);
 
     // floor
@@ -88,16 +99,16 @@ const init = async () => {
     scene.add(meshFloor);
 
     // cube
-    const meshCube = new THREE.Mesh(
-        new THREE.SphereGeometry(10, 10, 10),
-        new THREE.MeshStandardMaterial({
-            color: 0x808080,
-            roughness: 0,
-            metalness: 0.5,
-        })
-    );
-    meshCube.position.set(-30, 10, 0);
-    scene.add(meshCube);
+    // const meshCube = new THREE.Mesh(
+    //     new THREE.SphereGeometry(10, 10, 10),
+    //     new THREE.MeshStandardMaterial({
+    //         color: 0x808080,
+    //         roughness: 0,
+    //         metalness: 0.5,
+    //     })
+    // );
+    // meshCube.position.set(-30, 10, 0);
+    // scene.add(meshCube);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(1, 100, 10);
@@ -113,9 +124,6 @@ const init = async () => {
     uniforms = {
         loopAnimationTexture: {value: loopAnimationTexture},
         baseColorTexture: {value: baseColorTexture},
-        uFixAspect: {
-            value: 1 / 1,
-        },
         time: {
             value: 0.0,
         },
@@ -151,11 +159,11 @@ const init = async () => {
     // frame mix animation particle
     planeGeometry = new THREE.PlaneGeometry(20, 20);
 
-    partcicles = new THREE.Mesh(planeGeometry, shaderMaterial);
+    singleSmoke = new THREE.Mesh(planeGeometry, shaderMaterial);
 
-    partcicles.position.set(0, 10, 0);
+    singleSmoke.position.set(0, 10, 0);
 
-    scene.add(partcicles);
+    scene.add(singleSmoke);
 
     const spriteMixedFrameText = new THREE.Sprite(labelMaterial('mixed two frame'));
     spriteMixedFrameText.position.set(0, 25, 0);
@@ -179,6 +187,54 @@ const init = async () => {
     spriteSingleFrameText.scale.set(10, 10, 10);
 
     scene.add(spriteSingleFrameText);
+
+    smokeParticlesWrapper = new THREE.Group();
+
+    particleUniforms = {
+        loopAnimationTexture: {value: loopAnimationTexture},
+        baseColorTexture: {value: baseColorTexture},
+        time: {
+            value: 0.0,
+        },
+        speed: {
+            value: 0.5,
+        },
+        opacity: {
+            value: 0.001,
+        },
+        mixNextFrame: {
+            value: 1,
+        },
+        COLUMN: {
+            value: 8,
+        },
+        ROW: {
+            value: 8,
+        },
+        scale: {
+            type: 'v3',
+            value: new THREE.Vector3(1, 1, 1),
+        },
+    };
+
+    smokeParticleMaterial = new THREE.ShaderMaterial({
+        uniforms: particleUniforms,
+        vertexShader: shaders[0].vertex,
+        fragmentShader: shaders[0].smokeParticleFragment,
+        depthTest: true,
+        transparent: true,
+    });
+
+    for (let i = 0; i < 10; i += 1) {
+        const smokeGeometry = new THREE.PlaneGeometry(20, 20);
+        smokeGeometry.rotateZ(Math.random() * 6);
+        const smokeMesh = new THREE.Mesh(smokeGeometry, smokeParticleMaterial);
+        velocities.push(new THREE.Vector2(rangedRandom(-0.01, 0.01), rangedRandom(0.001, 0.05)));
+        smokeMesh.position.set(-25, Math.random() * 20 - 10 + 20, 0);
+        smokeParticlesWrapper.add(smokeMesh);
+    }
+
+    scene.add(smokeParticlesWrapper);
 };
 
 const animate = () => {
@@ -188,7 +244,25 @@ const animate = () => {
 
     time += frame;
 
+    for (let i = 0; i < smokeParticlesWrapper.children.length; i += 1) {
+        const object = smokeParticlesWrapper.children[i];
+        object.translateX(velocities[i].x);
+        object.translateY(velocities[i].y);
+    }
+
+    // smokeParticleMaterial.opacity -= 0.5;
+
+    // const smokeGeometry = new THREE.PlaneGeometry(20, 20);
+    // smokeGeometry.rotateZ(Math.random() * 6);
+    // const smokeMesh = new THREE.Mesh(smokeGeometry, smokeParticleMaterial);
+    // smokeMesh.position.set(-25, Math.random() * 20 - 10 + 20, 0);
+    // smokeParticlesWrapper.add(smokeMesh);
+
+    // scene.add(smokeParticlesWrapper);
+
     uniforms.time.value = time;
+    particleUniforms.time.value = time;
+    particleUniforms.opacity.value += 0.001;
 
     renderer.render(scene, camera);
 };
