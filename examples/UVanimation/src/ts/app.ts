@@ -7,20 +7,16 @@ let renderer: THREE.WebGLRenderer;
 let planeGeometry: THREE.PlaneGeometry;
 let shaderMaterial: THREE.ShaderMaterial;
 let singleSmoke: THREE.Mesh;
-let smokeParticlesWrapper: THREE.Group;
-let velocities: any;
 let smokeGeometries: Array<THREE.PlaneGeometry>;
 let smokeParticleMaterial: THREE.ShaderMaterial;
 let textureLoader: THREE.TextureLoader;
 let uniforms: any;
 let time: number;
-let particleUniforms: any;
 let delta: THREE.Clock;
-let lifeTime: number;
 let particleOwnLifeTime: number;
-let delay: number;
-let previousTime: number;
-let currentTime: number;
+let shaderData: {vertex: string; fragment: string; smokeParticleFragment: string}[];
+let loopAnimationTexture: THREE.Texture;
+let baseColorTexture: THREE.Texture;
 
 const onWindowResize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -74,7 +70,7 @@ const init = async () => {
     // intial settings
     const container = document.getElementById('canvas');
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
-    camera.position.set(0, 20, 50);
+    camera.position.set(0, 20, 80);
 
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -109,8 +105,8 @@ const init = async () => {
     // load textures
     textureLoader = new THREE.TextureLoader();
 
-    const loopAnimationTexture = textureLoader.load('./assets/images/T_Smoke_SubUV.png');
-    const baseColorTexture = textureLoader.load('./assets/images/T_Smoke_Tiled_D.jpg');
+    loopAnimationTexture = textureLoader.load('./assets/images/T_Smoke_SubUV.png');
+    baseColorTexture = textureLoader.load('./assets/images/T_Smoke_Tiled_D.jpg');
 
     // set uniform variables
     uniforms = {
@@ -137,12 +133,12 @@ const init = async () => {
     };
 
     // set shader
-    const shaders = await loadShaders();
+    shaderData = await loadShaders();
 
     shaderMaterial = new THREE.ShaderMaterial({
         uniforms,
-        vertexShader: shaders[0].vertex,
-        fragmentShader: shaders[0].fragment,
+        vertexShader: shaderData[0].vertex,
+        fragmentShader: shaderData[0].fragment,
         depthTest: true,
         transparent: true,
     });
@@ -181,65 +177,16 @@ const init = async () => {
 
     // multiple particles
 
-    velocities = [];
-
-    smokeParticlesWrapper = new THREE.Group();
-
-    particleUniforms = {
-        loopAnimationTexture: {value: loopAnimationTexture},
-        baseColorTexture: {value: baseColorTexture},
-        time: {
-            value: 0.0,
-        },
-        speed: {
-            value: 0.3,
-        },
-        opacity: {
-            value: 0.003,
-        },
-        mixNextFrame: {
-            value: 1,
-        },
-        COLUMN: {
-            value: 8,
-        },
-        ROW: {
-            value: 8,
-        },
-        scale: {
-            value: new THREE.Vector3(1, 1, 1),
-        },
-    };
-
-    smokeParticleMaterial = new THREE.ShaderMaterial({
-        uniforms: particleUniforms,
-        vertexShader: shaders[0].vertex,
-        fragmentShader: shaders[0].smokeParticleFragment,
-        depthTest: true,
-        transparent: true,
-    });
-
     smokeGeometries = [];
-
-    for (let i = 0; i < 10; i += 1) {
-        smokeGeometries.push(new THREE.PlaneGeometry(20, 20));
-        smokeGeometries[i].rotateZ(Math.random() * 360);
-        const smokeMesh = new THREE.Mesh(smokeGeometries[i], smokeParticleMaterial);
-        velocities.push(new THREE.Vector2(rangedRandom(-0.01, 0.01), rangedRandom(0.08, 0.2)));
-        smokeMesh.position.set(-25, rangedRandom(15, 10), 0);
-        smokeParticlesWrapper.add(smokeMesh);
-    }
-
-    scene.add(smokeParticlesWrapper);
-
-    // lifeTime = Math.round((64 / 60 / particleUniforms.speed.value) * 10);
-
-    lifeTime = 200;
-
-    particleOwnLifeTime = lifeTime;
-
-    delay = 0.5;
 };
+
+let count = 0;
+
+// let id = 0;
+
+const smokeMesh: any = {};
+
+let uuid = '';
 
 const animate = () => {
     requestAnimationFrame(animate);
@@ -250,33 +197,68 @@ const animate = () => {
 
     particleOwnLifeTime -= 1;
 
-    // previousTime = ((Math.round(time * 10) / 10) % 1) * 10;
+    count += 1;
 
-    // const index = Number(previousTime.toFixed(1)) - 1;
+    if (count % 10 === 0) {
+        count = 0;
 
-    for (let i = 0; i < smokeParticlesWrapper.children.length; i += 1) {
-        const object = smokeParticlesWrapper.children[i];
+        const geom = new THREE.PlaneGeometry(20, 20);
+        smokeGeometries.push(geom);
+        geom.rotateZ(Math.random() * 360);
+        uuid = geom.uuid;
 
-        if (particleOwnLifeTime === 0) {
-            if (i === 0) {
-                velocities = [];
-            }
-            smokeGeometries[i].rotateZ(Math.random() * 360);
-            velocities.push(new THREE.Vector2(rangedRandom(-0.01, 0.01), rangedRandom(0.08, 0.2)));
-            object.position.set(-25, rangedRandom(15, 10), 0);
+        const particleUniforms = {
+            loopAnimationTexture: {value: loopAnimationTexture},
+            baseColorTexture: {value: baseColorTexture},
+            time: {
+                value: 0.0,
+            },
+            speed: {
+                value: 0.2,
+            },
+            opacity: {
+                value: 0.003,
+            },
+            mixNextFrame: {
+                value: 1,
+            },
+            COLUMN: {
+                value: 8,
+            },
+            ROW: {
+                value: 8,
+            },
+            scale: {
+                value: new THREE.Vector3(1, 1, 1),
+            },
+        };
+        smokeParticleMaterial = new THREE.ShaderMaterial({
+            uniforms: particleUniforms,
+            vertexShader: shaderData[0].vertex,
+            fragmentShader: shaderData[0].smokeParticleFragment,
+            depthTest: true,
+            transparent: true,
+        });
+        smokeMesh[geom.uuid] = new THREE.Mesh(geom, smokeParticleMaterial);
+        smokeMesh[geom.uuid].userData = {
+            velocity: new THREE.Vector2(rangedRandom(-0.01, 0.01), rangedRandom(0.08, 0.2)),
+            ownLifeTime: 200,
+        };
+        smokeMesh[geom.uuid].position.set(-25, rangedRandom(15, 10), 0);
+        scene.add(smokeMesh[geom.uuid]);
+    }
 
-            if (i === smokeParticlesWrapper.children.length - 1) {
-                particleOwnLifeTime = lifeTime;
-                particleUniforms.opacity.value = 0.0;
-            }
-        }
-        object.translateX(velocities[i].x);
-        object.translateY(velocities[i].y);
+    if (Object.keys(smokeMesh).length !== 0 && uuid !== '') {
+        Object.keys(smokeMesh).forEach(key => {
+            smokeMesh[key].userData.ownLifeTime -= 1;
+            smokeMesh[key].translateX(smokeMesh[key].userData.velocity.x);
+            smokeMesh[key].translateY(smokeMesh[key].userData.velocity.y);
+            smokeMesh[key].material.uniforms.opacity.value += 0.003;
+            smokeMesh[key].material.uniforms.time.value = time;
+        });
     }
 
     uniforms.time.value = time;
-    particleUniforms.time.value = time;
-    particleUniforms.opacity.value += 0.003;
 
     renderer.render(scene, camera);
 };
