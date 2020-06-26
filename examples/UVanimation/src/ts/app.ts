@@ -76,8 +76,8 @@ const rangedRandom = (max: number, min: number) => {
 const init = async () => {
     // intial settings
     const container = document.getElementById('canvas');
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
-    camera.position.set(0, 20, 80);
+    camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 2000);
+    camera.position.set(0, 10, 40);
 
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -212,7 +212,7 @@ const animate = () => {
             loopAnimationTexture: {value: loopAnimationTexture},
             baseColorTexture: {value: baseColorTexture},
             time: {
-                value: 0.0,
+                value: 0,
             },
             speed: {
                 value: 0.3,
@@ -251,8 +251,9 @@ const animate = () => {
         smokeMesh[geom.uuid].userData = {
             velocity: new THREE.Vector2(rangedRandom(-0.01, 0.01), rangedRandom(0.08, 0.2)),
             lifeTime: staticLifeTime,
+            lifeCycleTime: -time,
         };
-        smokeMesh[geom.uuid].position.set(-25, rangedRandom(15, 10), 0);
+        smokeMesh[geom.uuid].position.set(-25, rangedRandom(12, 8), 0);
         scene.add(smokeMesh[geom.uuid]);
     }
 
@@ -261,21 +262,20 @@ const animate = () => {
             if (smokeMesh[key].userData.lifeTime === 0) {
                 smokeMesh[key].material.uniforms.resetOpacity.value = true;
                 smokeMesh[key].material.uniforms.opacity.value = 0;
-                smokeMesh[key].material.uniforms.time.value = 0;
-                console.log(smokeMesh[key].material.uniforms.time.value);
 
                 smokeMesh[key].userData = {
                     velocity: new THREE.Vector2(rangedRandom(-0.01, 0.01), rangedRandom(0.08, 0.2)),
                     lifeTime: staticLifeTime,
+                    lifeCycleTime: -time,
                 };
-                smokeMesh[key].position.set(-25, rangedRandom(15, 10), 0);
+                smokeMesh[key].position.set(-25, rangedRandom(12, 8), 0);
             }
             smokeMesh[key].material.uniforms.resetOpacity.value = false;
             smokeMesh[key].userData.lifeTime -= 1;
             smokeMesh[key].translateX(smokeMesh[key].userData.velocity.x);
             smokeMesh[key].translateY(smokeMesh[key].userData.velocity.y);
             smokeMesh[key].material.uniforms.opacity.value += 0.003;
-            smokeMesh[key].material.uniforms.time.value = time;
+            smokeMesh[key].material.uniforms.time.value = smokeMesh[key].userData.lifeCycleTime + time;
         });
     }
 
