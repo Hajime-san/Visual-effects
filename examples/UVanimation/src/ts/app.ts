@@ -13,7 +13,6 @@ let textureLoader: THREE.TextureLoader;
 let uniforms: any;
 let time: number;
 let delta: THREE.Clock;
-let particleOwnLifeTime: number;
 let shaderData: {vertex: string; fragment: string; smokeParticleFragment: string}[];
 let loopAnimationTexture: THREE.Texture;
 let baseColorTexture: THREE.Texture;
@@ -116,10 +115,10 @@ const init = async () => {
             value: 0.0,
         },
         speed: {
-            value: 1.0,
+            value: 0.5,
         },
         mixNextFrame: {
-            value: 1,
+            value: true,
         },
         COLUMN: {
             value: 8,
@@ -161,7 +160,7 @@ const init = async () => {
     // no-mix
     const nonMixFrameGeometry = new THREE.PlaneGeometry(20, 20);
 
-    uniforms.mixNextFrame.value = 0;
+    uniforms.mixNextFrame.value = false;
 
     const noMixFrameParticles = new THREE.Mesh(nonMixFrameGeometry, shaderMaterial);
 
@@ -180,13 +179,13 @@ const init = async () => {
     smokeGeometries = [];
 };
 
-let count = 0;
+let delay = 0;
 
 // let id = 0;
 
 const smokeMesh: any = {};
 
-let uuid = '';
+let staticLifeTime = 0;
 
 const animate = () => {
     requestAnimationFrame(animate);
@@ -195,17 +194,14 @@ const animate = () => {
 
     time += frame;
 
-    particleOwnLifeTime -= 1;
+    delay += 1;
 
-    count += 1;
-
-    if (count % 10 === 0) {
-        count = 0;
+    if (delay % 10 === 0 && Object.keys(smokeMesh).length < 11) {
+        delay = 0;
 
         const geom = new THREE.PlaneGeometry(20, 20);
         smokeGeometries.push(geom);
         geom.rotateZ(Math.random() * 360);
-        uuid = geom.uuid;
 
         const particleUniforms = {
             loopAnimationTexture: {value: loopAnimationTexture},
@@ -214,13 +210,16 @@ const animate = () => {
                 value: 0.0,
             },
             speed: {
-                value: 0.2,
+                value: 0.3,
             },
             opacity: {
                 value: 0.003,
             },
             mixNextFrame: {
-                value: 1,
+                value: true,
+            },
+            resetOpacity: {
+                value: true,
             },
             COLUMN: {
                 value: 8,
@@ -240,17 +239,31 @@ const animate = () => {
             transparent: true,
         });
         smokeMesh[geom.uuid] = new THREE.Mesh(geom, smokeParticleMaterial);
+        staticLifeTime = Math.floor(
+            (smokeParticleMaterial.uniforms.COLUMN.value * smokeParticleMaterial.uniforms.ROW.value) /
+                smokeParticleMaterial.uniforms.speed.value
+        );
         smokeMesh[geom.uuid].userData = {
             velocity: new THREE.Vector2(rangedRandom(-0.01, 0.01), rangedRandom(0.08, 0.2)),
-            ownLifeTime: 200,
+            lifeTime: staticLifeTime,
         };
         smokeMesh[geom.uuid].position.set(-25, rangedRandom(15, 10), 0);
         scene.add(smokeMesh[geom.uuid]);
     }
 
-    if (Object.keys(smokeMesh).length !== 0 && uuid !== '') {
+    if (Object.keys(smokeMesh).length !== 0) {
         Object.keys(smokeMesh).forEach(key => {
-            smokeMesh[key].userData.ownLifeTime -= 1;
+            if (smokeMesh[key].userData.lifeTime === 0) {
+                smokeMesh[key].material.uniforms.resetOpacity.value = false;
+                smokeMesh[key].material.uniforms.opacity.value = 0;
+                smokeMesh[key].userData = {
+                    velocity: new THREE.Vector2(rangedRandom(-0.01, 0.01), rangedRandom(0.08, 0.2)),
+                    lifeTime: staticLifeTime,
+                };
+                smokeMesh[key].position.set(-25, rangedRandom(15, 10), 0);
+            }
+            smokeMesh[key].material.uniforms.resetOpacity.value = true;
+            smokeMesh[key].userData.lifeTime -= 1;
             smokeMesh[key].translateX(smokeMesh[key].userData.velocity.x);
             smokeMesh[key].translateY(smokeMesh[key].userData.velocity.y);
             smokeMesh[key].material.uniforms.opacity.value += 0.003;

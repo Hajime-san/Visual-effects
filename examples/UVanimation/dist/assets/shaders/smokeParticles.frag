@@ -7,7 +7,8 @@ uniform float ROW;
 uniform float time;
 uniform float speed;
 uniform float opacity;
-uniform float mixNextFrame;
+uniform bool mixNextFrame;
+uniform bool resetOpacity;
 
 void main() {
 
@@ -34,10 +35,15 @@ void main() {
     vec4 loopTex = texture2D( loopAnimationTexture, animatedUv ).rgba;
     vec4 baseColorTex = vec4( texture2D( baseColorTexture, animatedUv ).rgb, 1.0);
     float alphaChannel = loopTex.a - opacity;
+
+    if(resetOpacity == false) {
+        alphaChannel = loopTex.a;
+    }
+
     vec3 currentFrameColor = loopTex.rgb + baseColorTex.rgb;
 
     vec4 finalColor;
-    if(mixNextFrame == 1.0) {
+    if(mixNextFrame == true) {
         // create next flip
         float nextIndex = mod(currentIndex + 1.0, sumFlip);
         float nextColumn = mod(nextIndex, COLUMN);

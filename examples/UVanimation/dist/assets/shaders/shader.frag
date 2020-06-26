@@ -6,7 +6,7 @@ uniform float COLUMN;
 uniform float ROW;
 uniform float time;
 uniform float speed;
-uniform float mixNextFrame;
+uniform bool mixNextFrame;
 
 void main() {
 
@@ -37,7 +37,7 @@ void main() {
     vec3 currentFrameColor = loopTex.rgb + baseColorTex.rgb;
 
     vec4 finalColor;
-    if(mixNextFrame == 1.0) {
+    if(mixNextFrame == true) {
         // create next flip
         float nextIndex = mod(currentIndex + 1.0, sumFlip);
         float nextColumn = mod(nextIndex, COLUMN);
