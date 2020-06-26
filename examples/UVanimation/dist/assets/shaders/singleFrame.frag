@@ -6,7 +6,6 @@ uniform float COLUMN;
 uniform float ROW;
 uniform float time;
 uniform float speed;
-uniform bool mixNextFrame;
 
 void main() {
 
@@ -36,26 +35,7 @@ void main() {
     float alphaChannel = loopTex.a;
     vec3 currentFrameColor = loopTex.rgb + baseColorTex.rgb;
 
-    vec4 finalColor;
-    if(mixNextFrame == true) {
-        // create next flip
-        float nextIndex = mod(currentIndex + 1.0, sumFlip);
-        float nextColumn = mod(nextIndex, COLUMN);
-        float nextRow = floor(nextIndex / ROW);
-        vec2 nextPosition = vec2(nextColumn, nextRow);
-        vec2 nextNormalizedPosition = flipSize * nextPosition;
-        vec2 nextAnimatedUv = pattern + nextNormalizedPosition;
-
-        vec4 nextLoopTex = texture2D( loopAnimationTexture, nextAnimatedUv ).rgba;
-        vec4 nextBaseColorTex = vec4( texture2D( baseColorTexture, nextAnimatedUv ).rgb, 1.0);
-        vec3 nextFrameColor = nextLoopTex.rgb + nextBaseColorTex.rgb;
-        vec3 lerpFlipColor = mix(currentFrameColor, nextFrameColor, fract(velocity));
-
-        finalColor = vec4(lerpFlipColor, alphaChannel);
-    } else {
-
-        finalColor = vec4(currentFrameColor, alphaChannel);
-    }
+    vec4 finalColor = vec4(currentFrameColor, alphaChannel);
 
     gl_FragColor = finalColor;
 }

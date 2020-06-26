@@ -13,7 +13,7 @@ let textureLoader: THREE.TextureLoader;
 let uniforms: any;
 let time: number;
 let delta: THREE.Clock;
-let shaderData: {vertex: string; fragment: string; smokeParticleFragment: string}[];
+let shaderData: {[prop: string]: string}[];
 let loopAnimationTexture: THREE.Texture;
 let baseColorTexture: THREE.Texture;
 
@@ -25,9 +25,17 @@ const onWindowResize = () => {
 
 const loadShaders = async () => {
     const vertexShader = await fetch('./assets/shaders/shader.vert').then(res => res.text());
-    const fragmentShader = await fetch('./assets/shaders/shader.frag').then(res => res.text());
+    const singleFrameShader = await fetch('./assets/shaders/singleFrame.frag').then(res => res.text());
+    const mixTwoFrameTwoFrameShader = await fetch('./assets/shaders/mixTwoFrameShader.frag').then(res => res.text());
     const smokeParticleFrag = await fetch('./assets/shaders/smokeParticles.frag').then(res => res.text());
-    return Promise.all([{vertex: vertexShader, fragment: fragmentShader, smokeParticleFragment: smokeParticleFrag}]);
+    return Promise.all([
+        {
+            vertex: vertexShader,
+            singleFrame: singleFrameShader,
+            mixtwoFrame: mixTwoFrameTwoFrameShader,
+            smokeParticleFragment: smokeParticleFrag,
+        },
+    ]);
 };
 
 // text sprite
@@ -117,9 +125,6 @@ const init = async () => {
         speed: {
             value: 0.5,
         },
-        mixNextFrame: {
-            value: true,
-        },
         COLUMN: {
             value: 8,
         },
@@ -137,7 +142,7 @@ const init = async () => {
     shaderMaterial = new THREE.ShaderMaterial({
         uniforms,
         vertexShader: shaderData[0].vertex,
-        fragmentShader: shaderData[0].fragment,
+        fragmentShader: shaderData[0].mixtwoFrame,
         depthTest: true,
         transparent: true,
     });
@@ -160,7 +165,7 @@ const init = async () => {
     // no-mix
     const nonMixFrameGeometry = new THREE.PlaneGeometry(20, 20);
 
-    uniforms.mixNextFrame.value = false;
+    shaderMaterial.fragmentShader = shaderData[0].singleFrame;
 
     const noMixFrameParticles = new THREE.Mesh(nonMixFrameGeometry, shaderMaterial);
 
@@ -196,7 +201,7 @@ const animate = () => {
 
     delay += 1;
 
-    if (delay % 10 === 0 && Object.keys(smokeMesh).length < 11) {
+    if (delay % 10 === 0 && Object.keys(smokeMesh).length < 20) {
         delay = 0;
 
         const geom = new THREE.PlaneGeometry(20, 20);
@@ -215,11 +220,8 @@ const animate = () => {
             opacity: {
                 value: 0.003,
             },
-            mixNextFrame: {
-                value: true,
-            },
             resetOpacity: {
-                value: true,
+                value: false,
             },
             COLUMN: {
                 value: 8,
@@ -238,11 +240,14 @@ const animate = () => {
             depthTest: true,
             transparent: true,
         });
+
         smokeMesh[geom.uuid] = new THREE.Mesh(geom, smokeParticleMaterial);
+
         staticLifeTime = Math.floor(
             (smokeParticleMaterial.uniforms.COLUMN.value * smokeParticleMaterial.uniforms.ROW.value) /
                 smokeParticleMaterial.uniforms.speed.value
         );
+
         smokeMesh[geom.uuid].userData = {
             velocity: new THREE.Vector2(rangedRandom(-0.01, 0.01), rangedRandom(0.08, 0.2)),
             lifeTime: staticLifeTime,
@@ -254,15 +259,18 @@ const animate = () => {
     if (Object.keys(smokeMesh).length !== 0) {
         Object.keys(smokeMesh).forEach(key => {
             if (smokeMesh[key].userData.lifeTime === 0) {
-                smokeMesh[key].material.uniforms.resetOpacity.value = false;
+                smokeMesh[key].material.uniforms.resetOpacity.value = true;
                 smokeMesh[key].material.uniforms.opacity.value = 0;
+                smokeMesh[key].material.uniforms.time.value = 0;
+                console.log(smokeMesh[key].material.uniforms.time.value);
+
                 smokeMesh[key].userData = {
                     velocity: new THREE.Vector2(rangedRandom(-0.01, 0.01), rangedRandom(0.08, 0.2)),
                     lifeTime: staticLifeTime,
                 };
                 smokeMesh[key].position.set(-25, rangedRandom(15, 10), 0);
             }
-            smokeMesh[key].material.uniforms.resetOpacity.value = true;
+            smokeMesh[key].material.uniforms.resetOpacity.value = false;
             smokeMesh[key].userData.lifeTime -= 1;
             smokeMesh[key].translateX(smokeMesh[key].userData.velocity.x);
             smokeMesh[key].translateY(smokeMesh[key].userData.velocity.y);
