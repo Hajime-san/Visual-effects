@@ -186,8 +186,6 @@ const init = async () => {
 
 let delay = 0;
 
-// let id = 0;
-
 const smokeMesh: any = {};
 
 let staticLifeTime = 0;
