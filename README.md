@@ -1,6 +1,6 @@
 # Visual-effects
 
-[DEMO](https://hajime-san.github.io/Visual-effects/examples/)
+[DEMO](https://hajime-san.github.io/Visual-effects/examples/index.html)
 
 # scripts for get project directory
 - start project
