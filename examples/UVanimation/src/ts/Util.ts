@@ -16,7 +16,6 @@ export const labelMaterial = (text: string) => {
 
     ctx.fillStyle = '#000';
     ctx.font = `${fontSize}pt Georgia`;
-    // ctx.textAlign = 'center';
 
     const textWidth = Math.floor(Number(ctx.measureText(text).width));
 

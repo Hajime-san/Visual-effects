@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
-import {rangedRandom, loadShaders, ShaderData, labelMaterial} from './Util';
+import {loadShaders, ShaderData, labelMaterial} from './Util';
+import * as ParticleSystem from './ParticleSystem';
 
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
@@ -8,10 +9,8 @@ let renderer: THREE.WebGLRenderer;
 let planeGeometry: THREE.PlaneGeometry;
 let shaderMaterial: THREE.ShaderMaterial;
 let singleSmoke: THREE.Mesh;
-let smokeGeometries: Array<THREE.PlaneGeometry>;
-let smokeParticleMaterial: THREE.ShaderMaterial;
 let textureLoader: THREE.TextureLoader;
-let uniforms: any;
+let uniforms: {[prop: string]: any};
 let time: number;
 let delta: THREE.Clock;
 let shaderData: ShaderData;
@@ -118,7 +117,7 @@ const init = async () => {
 
     scene.add(spriteMixedFrameText);
 
-    // no-mix
+    // no-mix frame animation
     const nonMixFrameGeometry = new THREE.PlaneGeometry(20, 20);
 
     shaderMaterial.fragmentShader = shaderData.singleFrame;
@@ -134,17 +133,7 @@ const init = async () => {
     spriteSingleFrameText.scale.set(10, 10, 10);
 
     scene.add(spriteSingleFrameText);
-
-    // multiple particles
-
-    smokeGeometries = [];
 };
-
-let delay = 0;
-
-const smokeMesh: any = {};
-
-let staticLifeTime = 0;
 
 const animate = () => {
     requestAnimationFrame(animate);
@@ -153,87 +142,11 @@ const animate = () => {
 
     time += frame;
 
-    delay += 1;
-
-    if (delay % 10 === 0 && Object.keys(smokeMesh).length < 20) {
-        delay = 0;
-
-        const geom = new THREE.PlaneGeometry(20, 20);
-        smokeGeometries.push(geom);
-        geom.rotateZ(Math.random() * 360);
-
-        const particleUniforms = {
-            loopAnimationTexture: {value: loopAnimationTexture},
-            baseColorTexture: {value: baseColorTexture},
-            time: {
-                value: 0,
-            },
-            speed: {
-                value: 0.3,
-            },
-            opacity: {
-                value: 0.003,
-            },
-            resetOpacity: {
-                value: false,
-            },
-            COLUMN: {
-                value: 8,
-            },
-            ROW: {
-                value: 8,
-            },
-            scale: {
-                value: new THREE.Vector3(1, 1, 1),
-            },
-        };
-        smokeParticleMaterial = new THREE.ShaderMaterial({
-            uniforms: particleUniforms,
-            vertexShader: shaderData.vertex,
-            fragmentShader: shaderData.smokeParticleFragment,
-            depthTest: true,
-            transparent: true,
-        });
-
-        smokeMesh[geom.uuid] = new THREE.Mesh(geom, smokeParticleMaterial);
-
-        staticLifeTime = Math.floor(
-            (smokeParticleMaterial.uniforms.COLUMN.value * smokeParticleMaterial.uniforms.ROW.value) /
-                smokeParticleMaterial.uniforms.speed.value
-        );
-
-        smokeMesh[geom.uuid].userData = {
-            velocity: new THREE.Vector2(rangedRandom(-0.01, 0.01), rangedRandom(0.08, 0.2)),
-            lifeTime: staticLifeTime,
-            lifeCycleTime: -time,
-        };
-        smokeMesh[geom.uuid].position.set(-25, rangedRandom(12, 8), 0);
-        scene.add(smokeMesh[geom.uuid]);
-    }
-
-    if (Object.keys(smokeMesh).length !== 0) {
-        Object.keys(smokeMesh).forEach(key => {
-            if (smokeMesh[key].userData.lifeTime === 0) {
-                smokeMesh[key].material.uniforms.resetOpacity.value = true;
-                smokeMesh[key].material.uniforms.opacity.value = 0;
-
-                smokeMesh[key].userData = {
-                    velocity: new THREE.Vector2(rangedRandom(-0.01, 0.01), rangedRandom(0.08, 0.2)),
-                    lifeTime: staticLifeTime,
-                    lifeCycleTime: -time,
-                };
-                smokeMesh[key].position.set(-25, rangedRandom(12, 8), 0);
-            }
-            smokeMesh[key].material.uniforms.resetOpacity.value = false;
-            smokeMesh[key].userData.lifeTime -= 1;
-            smokeMesh[key].translateX(smokeMesh[key].userData.velocity.x);
-            smokeMesh[key].translateY(smokeMesh[key].userData.velocity.y);
-            smokeMesh[key].material.uniforms.opacity.value += 0.003;
-            smokeMesh[key].material.uniforms.time.value = smokeMesh[key].userData.lifeCycleTime + time;
-        });
-    }
-
     uniforms.time.value = time;
+
+    ParticleSystem.init(scene, shaderData, loopAnimationTexture, baseColorTexture, 10, 20, 0.3, time);
+
+    ParticleSystem.update(time);
 
     renderer.render(scene, camera);
 };
