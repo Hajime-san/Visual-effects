@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
+import {rangedRandom, loadShaders, ShaderData, labelMaterial} from './Util';
 
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
@@ -13,7 +14,7 @@ let textureLoader: THREE.TextureLoader;
 let uniforms: any;
 let time: number;
 let delta: THREE.Clock;
-let shaderData: {[prop: string]: string}[];
+let shaderData: ShaderData;
 let loopAnimationTexture: THREE.Texture;
 let baseColorTexture: THREE.Texture;
 
@@ -21,56 +22,6 @@ const onWindowResize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
-};
-
-const loadShaders = async () => {
-    const vertexShader = await fetch('./assets/shaders/shader.vert').then(res => res.text());
-    const singleFrameShader = await fetch('./assets/shaders/singleFrame.frag').then(res => res.text());
-    const mixTwoFrameTwoFrameShader = await fetch('./assets/shaders/mixTwoFrameShader.frag').then(res => res.text());
-    const smokeParticleFrag = await fetch('./assets/shaders/smokeParticles.frag').then(res => res.text());
-    return Promise.all([
-        {
-            vertex: vertexShader,
-            singleFrame: singleFrameShader,
-            mixtwoFrame: mixTwoFrameTwoFrameShader,
-            smokeParticleFragment: smokeParticleFrag,
-        },
-    ]);
-};
-
-// text sprite
-const labelMaterial = (text: string) => {
-    const canvas = document.createElement('canvas');
-
-    canvas.width = 512;
-    canvas.height = 512;
-
-    const ctx = canvas.getContext('2d');
-
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    const fontSize = 36;
-
-    ctx.fillStyle = '#000';
-    ctx.font = `${fontSize}pt Georgia`;
-    // ctx.textAlign = 'center';
-
-    const textWidth = Math.floor(Number(ctx.measureText(text).width));
-
-    const horizontalCenter = canvas.width / 2 - textWidth / 2;
-
-    const verticalCenter = canvas.height / 2 + fontSize / 2;
-
-    ctx.fillText(text, horizontalCenter, verticalCenter);
-
-    const map = new THREE.CanvasTexture(canvas);
-
-    return new THREE.SpriteMaterial({map});
-};
-
-const rangedRandom = (max: number, min: number) => {
-    return Math.random() * (max - min) + min;
 };
 
 const init = async () => {
@@ -137,12 +88,17 @@ const init = async () => {
     };
 
     // set shader
-    shaderData = await loadShaders();
+    shaderData = await loadShaders([
+        {key: 'vertex', path: './assets/shaders/shader.vert'},
+        {key: 'singleFrame', path: './assets/shaders/singleFrame.frag'},
+        {key: 'mixtwoFrame', path: './assets/shaders/mixTwoFrameShader.frag'},
+        {key: 'smokeParticleFragment', path: './assets/shaders/smokeParticles.frag'},
+    ]);
 
     shaderMaterial = new THREE.ShaderMaterial({
         uniforms,
-        vertexShader: shaderData[0].vertex,
-        fragmentShader: shaderData[0].mixtwoFrame,
+        vertexShader: shaderData.vertex,
+        fragmentShader: shaderData.mixtwoFrame,
         depthTest: true,
         transparent: true,
     });
@@ -165,7 +121,7 @@ const init = async () => {
     // no-mix
     const nonMixFrameGeometry = new THREE.PlaneGeometry(20, 20);
 
-    shaderMaterial.fragmentShader = shaderData[0].singleFrame;
+    shaderMaterial.fragmentShader = shaderData.singleFrame;
 
     const noMixFrameParticles = new THREE.Mesh(nonMixFrameGeometry, shaderMaterial);
 
@@ -233,8 +189,8 @@ const animate = () => {
         };
         smokeParticleMaterial = new THREE.ShaderMaterial({
             uniforms: particleUniforms,
-            vertexShader: shaderData[0].vertex,
-            fragmentShader: shaderData[0].smokeParticleFragment,
+            vertexShader: shaderData.vertex,
+            fragmentShader: shaderData.smokeParticleFragment,
             depthTest: true,
             transparent: true,
         });

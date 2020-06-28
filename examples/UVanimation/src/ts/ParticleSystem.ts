@@ -1,13 +1,13 @@
 import * as THREE from 'three';
-import { rangedRandom } from './Util';
+import {rangedRandom, loadShaders} from './Util';
 
 let scene: THREE.Scene;
-let geometries = [];
+const geometries = [];
 let material: THREE.ShaderMaterial;
 const textureLoader = new THREE.TextureLoader();
 let uniforms: any;
 let delta: THREE.Clock;
-let shaderData: { [prop: string]: string }[];
+let shaderData: {[prop: string]: string}[];
 const loopAnimationTexture = textureLoader.load('./assets/images/T_Smoke_SubUV.png');
 const baseColorTexture = textureLoader.load('./assets/images/T_Smoke_Tiled_D.jpg');
 const mesh: any = {};
@@ -25,8 +25,8 @@ export const init = (delay: number, particleAmount: number, speed: number, time:
         geometory.rotateZ(Math.random() * 360);
 
         const particleUniforms = {
-            loopAnimationTexture: { value: loopAnimationTexture },
-            baseColorTexture: { value: baseColorTexture },
+            loopAnimationTexture: {value: loopAnimationTexture},
+            baseColorTexture: {value: baseColorTexture},
             time: {
                 value: 0,
             },

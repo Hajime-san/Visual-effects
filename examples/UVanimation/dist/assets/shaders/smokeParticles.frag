@@ -38,7 +38,6 @@ void main() {
 
     if(resetOpacity == true) {
         alphaChannel = loopTex.a;
-        currentIndex = 0.0;
     }
 
     vec4 nextLoopTex = texture2D( loopAnimationTexture, nextAnimatedUv ).rgba;

@@ -28,30 +28,36 @@ export const labelMaterial = (text: string) => {
 
     const map = new THREE.CanvasTexture(canvas);
 
-    return new THREE.SpriteMaterial({ map });
+    return new THREE.SpriteMaterial({map});
 };
 
 interface ShaderObject {
-  key: string,
-  path: string
+    key: string;
+    path: string;
 }
 
-const loadShaders = async (shaderObject: Array<ShaderObject>) => {
-  const vertexShader = await fetch('./assets/shaders/shader.vert').then(res => res.text());
+export interface ShaderData {
+    [prop: string]: string;
+}
 
-  for (let index = 0; index < shaderObject.length; index+= 1) {
-    const element = shaderObject[index];
+export const loadShaders = async (shaderObject: Array<ShaderObject>) => {
+    const result = await Promise.all(
+        shaderObject.map(async v => {
+            const shader = {
+                [v.key]: await fetch(v.path).then(res => res.text()),
+            };
 
-  }
+            return shader;
+        })
+    );
 
-  return Promise.all([
-      {
-          vertex: vertexShader,
-          singleFrame: singleFrameShader,
-          mixtwoFrame: mixTwoFrameTwoFrameShader,
-          smokeParticleFragment: smokeParticleFrag,
-      },
-  ]);
+    const shaderData: ShaderData = {};
+
+    result.forEach(v => {
+        shaderData[Object.keys(v)[0]] = Object.values(v)[0];
+    });
+
+    return shaderData;
 };
 
 export const rangedRandom = (max: number, min: number) => {
