@@ -1,6 +1,6 @@
 # Visual-effects
 
-[DEMO](https://hajime-san.github.io/Visual-effects/examples/index.html)
+[DEMO](https://hajime-san.github.io/Visual-effects/examples/)
 
 # scripts for get project directory
 - start project
@@ -10,7 +10,3 @@
 - build project
 
 `node getTargetPath.js b`
-
-
-## License
-MIT
