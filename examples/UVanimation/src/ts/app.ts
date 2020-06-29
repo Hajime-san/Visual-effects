@@ -1,16 +1,18 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import * as dat from 'dat.gui';
 import { loadShaders, ShaderData, labelMaterial } from './Util';
 import * as ParticleSystem from './ParticleSystem';
 
 let camera: THREE.PerspectiveCamera;
+// let cubeCamera: THREE.CubeCamera;
 let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
 let planeGeometry: THREE.PlaneGeometry;
 let shaderMaterial: THREE.ShaderMaterial;
 let singleSmoke: THREE.Mesh;
 let textureLoader: THREE.TextureLoader;
-let uniforms: { [prop: string]: any };
+let uniforms: { [uniform: string]: THREE.IUniform };
 let time: number;
 let delta: THREE.Clock;
 let shaderData: ShaderData;
@@ -23,7 +25,22 @@ const onWindowResize = () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 };
 
+class GuiUniforms {
+    speed: number;
+
+    constructor() {
+        this.speed = 1.0;
+    }
+}
+
 const init = async () => {
+    // dat GUI
+    const parameters = new GuiUniforms();
+    const gui = new dat.GUI();
+    gui.add(parameters, 'speed', 0.1, 5.0).onChange(() => {
+        uniforms.speed.value = parameters.speed;
+    });
+
     // intial settings
     const container = document.getElementById('canvas');
     camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 2000);
@@ -36,7 +53,15 @@ const init = async () => {
 
     const controls = new OrbitControls(camera, renderer.domElement);
 
+    // const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(128, { format: THREE.RGBFormat, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter });
+
+    // cubeCamera = new THREE.CubeCamera(1, 100, cubeRenderTarget);
+    // cubeCamera.position.set(0, -50, 0);
+    // cubeCamera.translateY(50);
+
     scene = new THREE.Scene();
+
+    // scene.add(cubeCamera);
 
     time = 0;
 
@@ -51,6 +76,7 @@ const init = async () => {
             color: 0x808080,
             roughness: 0,
             metalness: 0.5,
+            // envMap: cubeRenderTarget.texture,
         })
     );
     scene.add(meshFloor);
@@ -149,6 +175,8 @@ const animate = () => {
     ParticleSystem.update(time);
 
     renderer.render(scene, camera);
+
+    // cubeCamera.update(renderer, scene);
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
