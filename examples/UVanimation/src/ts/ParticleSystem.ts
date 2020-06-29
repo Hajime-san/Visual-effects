@@ -1,10 +1,12 @@
 import * as THREE from 'three';
-import {rangedRandom, ShaderData} from './Util';
+import { rangedRandom, ShaderData } from './Util';
 
 // geometry pool array
 const geometries: Array<THREE.PlaneGeometry> = [];
 // mesh pool arrayLike object
-const mesh: {[prop: string]: THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>} = {};
+const mesh: {
+    [prop: string]: THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>;
+} = {};
 // keep current counter in requestAnimationFrame
 let counter = 0;
 // keep amount life time when it resets
@@ -41,8 +43,8 @@ export const init = (
         geometory.rotateZ(Math.random() * 360);
 
         const particleUniforms = {
-            loopAnimationTexture: {value: loopAnimationTexture},
-            baseColorTexture: {value: baseColorTexture},
+            loopAnimationTexture: { value: loopAnimationTexture },
+            baseColorTexture: { value: baseColorTexture },
             time: {
                 value: 0,
             },
@@ -76,9 +78,7 @@ export const init = (
 
         mesh[geometory.uuid] = new THREE.Mesh(geometory, material);
 
-        staticLifeTime = Math.floor(
-            (material.uniforms.COLUMN.value * material.uniforms.ROW.value) / material.uniforms.speed.value
-        );
+        staticLifeTime = Math.floor((material.uniforms.COLUMN.value * material.uniforms.ROW.value) / material.uniforms.speed.value);
 
         mesh[geometory.uuid].userData = {
             velocity: new THREE.Vector2(rangedRandom(-0.01, 0.01), rangedRandom(0.08, 0.2)),

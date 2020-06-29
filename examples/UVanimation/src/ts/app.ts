@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
-import {loadShaders, ShaderData, labelMaterial} from './Util';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { loadShaders, ShaderData, labelMaterial } from './Util';
 import * as ParticleSystem from './ParticleSystem';
 
 let camera: THREE.PerspectiveCamera;
@@ -10,7 +10,7 @@ let planeGeometry: THREE.PlaneGeometry;
 let shaderMaterial: THREE.ShaderMaterial;
 let singleSmoke: THREE.Mesh;
 let textureLoader: THREE.TextureLoader;
-let uniforms: {[prop: string]: any};
+let uniforms: { [prop: string]: any };
 let time: number;
 let delta: THREE.Clock;
 let shaderData: ShaderData;
@@ -29,7 +29,7 @@ const init = async () => {
     camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 2000);
     camera.position.set(0, 10, 40);
 
-    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);
@@ -67,8 +67,8 @@ const init = async () => {
 
     // set uniform variables
     uniforms = {
-        loopAnimationTexture: {value: loopAnimationTexture},
-        baseColorTexture: {value: baseColorTexture},
+        loopAnimationTexture: { value: loopAnimationTexture },
+        baseColorTexture: { value: baseColorTexture },
         time: {
             value: 0.0,
         },
@@ -88,10 +88,10 @@ const init = async () => {
 
     // set shader
     shaderData = await loadShaders([
-        {key: 'vertex', path: './assets/shaders/shader.vert'},
-        {key: 'singleFrame', path: './assets/shaders/singleFrame.frag'},
-        {key: 'mixtwoFrame', path: './assets/shaders/mixTwoFrameShader.frag'},
-        {key: 'smokeParticleFragment', path: './assets/shaders/smokeParticles.frag'},
+        { key: 'vertex', path: './assets/shaders/shader.vert' },
+        { key: 'singleFrame', path: './assets/shaders/singleFrame.frag' },
+        { key: 'mixtwoFrame', path: './assets/shaders/mixTwoFrameShader.frag' },
+        { key: 'smokeParticleFragment', path: './assets/shaders/smokeParticles.frag' },
     ]);
 
     shaderMaterial = new THREE.ShaderMaterial({

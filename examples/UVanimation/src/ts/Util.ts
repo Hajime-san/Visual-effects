@@ -27,7 +27,7 @@ export const labelMaterial = (text: string) => {
 
     const map = new THREE.CanvasTexture(canvas);
 
-    return new THREE.SpriteMaterial({map});
+    return new THREE.SpriteMaterial({ map });
 };
 
 interface ShaderObject {
