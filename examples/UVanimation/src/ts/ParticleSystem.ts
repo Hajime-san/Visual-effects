@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { rangedRandom, ShaderData } from './Util';
+import { rangedRandom, ShaderData } from '../../../modules/Util';
 
 // geometry pool array
 const geometries: Array<THREE.PlaneGeometry> = [];

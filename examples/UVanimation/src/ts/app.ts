@@ -1,15 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { loadShaders, ShaderData, labelMaterial } from './Util';
+import { loadShaders, ShaderData, labelMaterial, onWindowResize } from '../../../modules/Util';
 import * as ParticleSystem from './ParticleSystem';
 
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
-let planeGeometry: THREE.PlaneGeometry;
 let shaderMaterial: THREE.ShaderMaterial;
-let singleSmoke: THREE.Mesh;
 let textureLoader: THREE.TextureLoader;
 let uniforms: { [uniform: string]: THREE.IUniform };
 let time: number;
@@ -17,12 +15,6 @@ let delta: THREE.Clock;
 let shaderData: ShaderData;
 let loopAnimationTexture: THREE.Texture;
 let baseColorTexture: THREE.Texture;
-
-const onWindowResize = () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-};
 
 class GuiUniforms {
     speed: number;
@@ -58,7 +50,7 @@ const init = async () => {
 
     delta = new THREE.Clock();
 
-    window.addEventListener('resize', onWindowResize, false);
+    window.addEventListener('resize', () => onWindowResize(camera, renderer), false);
 
     // floor
     const meshFloor = new THREE.Mesh(
@@ -67,7 +59,6 @@ const init = async () => {
             color: 0x808080,
             roughness: 0,
             metalness: 0.5,
-            // envMap: cubeRenderTarget.texture,
         })
     );
     scene.add(meshFloor);
@@ -107,26 +98,26 @@ const init = async () => {
     shaderData = await loadShaders([
         { key: 'vertex', path: './assets/shaders/shader.vert' },
         { key: 'singleFrame', path: './assets/shaders/singleFrame.frag' },
-        { key: 'mixtwoFrame', path: './assets/shaders/mixTwoFrameShader.frag' },
+        { key: 'mixTwoFrame', path: './assets/shaders/mixTwoFrameShader.frag' },
         { key: 'smokeParticleFragment', path: './assets/shaders/smokeParticles.frag' },
     ]);
 
     shaderMaterial = new THREE.ShaderMaterial({
         uniforms,
         vertexShader: shaderData.vertex,
-        fragmentShader: shaderData.mixtwoFrame,
+        fragmentShader: shaderData.mixTwoFrame,
         depthTest: true,
         transparent: true,
     });
 
     // frame mix animation particle
-    planeGeometry = new THREE.PlaneGeometry(20, 20);
+    const mixTwoFrameGeometry = new THREE.PlaneGeometry(20, 20);
 
-    singleSmoke = new THREE.Mesh(planeGeometry, shaderMaterial);
+    const mixTwoFrameMesh = new THREE.Mesh(mixTwoFrameGeometry, shaderMaterial);
 
-    singleSmoke.position.set(0, 10, 0);
+    mixTwoFrameMesh.position.set(0, 10, 0);
 
-    scene.add(singleSmoke);
+    scene.add(mixTwoFrameMesh);
 
     const spriteMixedFrameText = new THREE.Sprite(labelMaterial('mixed two frame'));
     spriteMixedFrameText.position.set(0, 25, 0);
@@ -135,15 +126,15 @@ const init = async () => {
     scene.add(spriteMixedFrameText);
 
     // no-mix frame animation
-    const nonMixFrameGeometry = new THREE.PlaneGeometry(20, 20);
+    const singleFrameGeometry = new THREE.PlaneGeometry(20, 20);
 
     shaderMaterial.fragmentShader = shaderData.singleFrame;
 
-    const noMixFrameParticles = new THREE.Mesh(nonMixFrameGeometry, shaderMaterial);
+    const singleFrameMesh = new THREE.Mesh(singleFrameGeometry, shaderMaterial);
 
-    noMixFrameParticles.position.set(25, 10, 0);
+    singleFrameMesh.position.set(25, 10, 0);
 
-    scene.add(noMixFrameParticles);
+    scene.add(singleFrameMesh);
 
     const spriteSingleFrameText = new THREE.Sprite(labelMaterial('single frame'));
     spriteSingleFrameText.position.set(25, 25, 0);

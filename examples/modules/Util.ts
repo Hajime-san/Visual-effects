@@ -59,6 +59,12 @@ export const loadShaders = async (shaderObject: Array<ShaderObject>) => {
     return shaderData;
 };
 
+export const onWindowResize = (camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer) => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+};
+
 export const rangedRandom = (max: number, min: number) => {
     return Math.random() * (max - min) + min;
 };

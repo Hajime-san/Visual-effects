@@ -23,5 +23,8 @@ switch (parameter) {
 const Targets = fs.readdirSync(baseDir).filter(dirName => !pattern.test(dirName));
 
 for(let i = 0; i < Targets.length; i += 1){
+  if(Targets[i] === 'modules') {
+    continue;
+  }
   console.log(`TARGET_PATH=${baseDir}${Targets[i]} yarn${space}${script}`);
 }

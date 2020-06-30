@@ -52,7 +52,7 @@
         "brace-style": [ "error", "1tbs", { "allowSingleLine": true } ],
         "comma-spacing": ["error", { "before": false, "after": true }],
         "comma-style": [ 1, "last" ],
-
+        "no-param-reassign": [2, { "props": false }],
         "import/extensions": [
             "error",
             "ignorePackages",
