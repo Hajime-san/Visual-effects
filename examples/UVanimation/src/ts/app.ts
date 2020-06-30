@@ -5,7 +5,6 @@ import { loadShaders, ShaderData, labelMaterial } from './Util';
 import * as ParticleSystem from './ParticleSystem';
 
 let camera: THREE.PerspectiveCamera;
-// let cubeCamera: THREE.CubeCamera;
 let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
 let planeGeometry: THREE.PlaneGeometry;
@@ -53,15 +52,7 @@ const init = async () => {
 
     const controls = new OrbitControls(camera, renderer.domElement);
 
-    // const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(128, { format: THREE.RGBFormat, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter });
-
-    // cubeCamera = new THREE.CubeCamera(1, 100, cubeRenderTarget);
-    // cubeCamera.position.set(0, -50, 0);
-    // cubeCamera.translateY(50);
-
     scene = new THREE.Scene();
-
-    // scene.add(cubeCamera);
 
     time = 0;
 
@@ -175,8 +166,6 @@ const animate = () => {
     ParticleSystem.update(time);
 
     renderer.render(scene, camera);
-
-    // cubeCamera.update(renderer, scene);
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
