@@ -46,7 +46,7 @@ const init = async () => {
     scene.add(meshFloor);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(1, 100, 10);
+    directionalLight.position.set(1, 1, -10);
     scene.add(directionalLight);
 
     // load textures
@@ -70,10 +70,10 @@ const init = async () => {
             value: 8,
         },
         particleColor: {
-            value: new THREE.Vector4(1, 1, 1, 1),
+            value: new THREE.Vector4(3, 3, 4, -1),
         },
         dynamicParameter: {
-            value: new THREE.Vector3(1, 1, 1),
+            value: new THREE.Vector3(1, 4, 1),
         },
         scale: {
             value: new THREE.Vector3(1, 1, 1),

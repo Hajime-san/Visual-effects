@@ -45,13 +45,8 @@ void main() {
 
     vec3 finalBaseColor = baseColor.rgb * setIntensity;
 
-    float createAlpha = saturate((addColor * addColor) + addColor);
-    float finalAlpha = createAlpha * alphaCtrl;
-
-    // vec4 loopTex = create_uv_loop(loopAnimationTexture);
-    // float alphaChannel = loopTex.a;
-    // vec3 currentFrameColor = loopTex.rgb;
-    //vec4 finalColor = vec4(currentFrameColor, alphaChannel);
+    float modulateAlpha = saturate((addColor * addColor) + addColor);
+    float finalAlpha = modulateAlpha * alphaCtrl;
 
     vec4 finalColor = vec4(finalBaseColor, finalAlpha);
 
