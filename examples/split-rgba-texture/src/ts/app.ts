@@ -5,7 +5,6 @@ import { loadShaders, ShaderData, onWindowResize } from '../../../modules/Util';
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
-let planeGeometry: THREE.PlaneGeometry;
 let shaderMaterial: THREE.ShaderMaterial;
 let textureLoader: THREE.TextureLoader;
 let uniforms: { [uniform: string]: THREE.IUniform };
@@ -70,6 +69,12 @@ const init = async () => {
         ROW: {
             value: 8,
         },
+        particleColor: {
+            value: new THREE.Vector4(1, 1, 1, 1),
+        },
+        dynamicParameter: {
+            value: new THREE.Vector3(1, 1, 1),
+        },
         scale: {
             value: new THREE.Vector3(1, 1, 1),
         },
@@ -78,25 +83,25 @@ const init = async () => {
     // set shader
     shaderData = await loadShaders([
         { key: 'vertex', path: './assets/shaders/shader.vert' },
-        { key: 'singleFrame', path: './assets/shaders/singleFrame.frag' },
+        { key: 'fragment', path: './assets/shaders/shader.frag' },
     ]);
 
     shaderMaterial = new THREE.ShaderMaterial({
         uniforms,
         vertexShader: shaderData.vertex,
-        fragmentShader: shaderData.singleFrame,
+        fragmentShader: shaderData.fragment,
         depthTest: true,
         transparent: true,
     });
 
     // frame mix animation particle
-    const mixTwoFrameGeometry = new THREE.PlaneGeometry(20, 20);
+    const geometry = new THREE.PlaneGeometry(20, 20);
 
-    const mixTwoFrameMesh = new THREE.Mesh(mixTwoFrameGeometry, shaderMaterial);
+    const mesh = new THREE.Mesh(geometry, shaderMaterial);
 
-    mixTwoFrameMesh.position.set(0, 10, 0);
+    mesh.position.set(0, 10, 0);
 
-    scene.add(mixTwoFrameMesh);
+    scene.add(mesh);
 };
 
 const animate = () => {
