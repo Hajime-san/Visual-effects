@@ -10,7 +10,8 @@ module.exports = {
     devServer: {
         contentBase: path.join(__dirname, `${process.env.TARGET_PATH}/dist`),
         port: 9000,
-        watchContentBase: true
+        watchContentBase: true,
+        open: true,
     },
     entry: {
         bundle: path.join(__dirname, `${process.env.TARGET_PATH}/src/ts/app.ts`)
