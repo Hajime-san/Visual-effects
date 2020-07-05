@@ -47,7 +47,7 @@
         "no-unexpected-multiline": "error",
         "@typescript-eslint/explicit-function-return-type": "off",
         "prefer-destructuring": "off",
-        "array-bracket-spacing": ["error", "always", { "singleValue": true, "arraysInArrays": false }],
+        //"array-bracket-spacing": ["error", "always", { "singleValue": true, "arraysInArrays": false }],
         "block-spacing": ["error", "always"],
         "brace-style": [ "error", "1tbs", { "allowSingleLine": true } ],
         "comma-spacing": ["error", { "before": false, "after": true }],

@@ -7,9 +7,17 @@ uniform float time;
 uniform float speed;
 uniform vec4 particleColor;
 uniform vec3 dynamicParameter;
+uniform vec3 baseColor;
 
 float saturate(float x) {
     return clamp( x, 0.0, 1.0 );
+}
+
+vec3 colorConvert(vec3 c) {
+    c.r = c.r / 255.0;
+    c.g = c.g / 255.0;
+    c.b = c.b / 255.0;
+    return c;
 }
 
 vec4 create_uv_loop (sampler2D tex) {
@@ -31,20 +39,20 @@ vec4 create_uv_loop (sampler2D tex) {
 
 void main() {
 
-    vec3 baseColor = vec3(0.974, 0.302, 0.00482);
+    vec3 fireColor = colorConvert(baseColor);
 
     float depthFade = dynamicParameter.x;
     float intensity = dynamicParameter.y;
     float alphaCtrl = dynamicParameter.z;
 
     vec4 texture = create_uv_loop(loopAnimationTexture);
-    vec4 multiplyColor = texture * particleColor;
+    vec4 multiplyColor = particleColor * texture;
     float sumChannel = multiplyColor.r + multiplyColor.g + multiplyColor.b + multiplyColor.a;
 
-    float removeMinus = max(1.0, sumChannel);
+    float removeMinus = max(sumChannel, 0.0);
     float setIntensity = removeMinus * intensity;
 
-    vec3 finalBaseColor = baseColor * setIntensity;
+    vec3 finalBaseColor = fireColor * setIntensity;
 
     float modulateAlpha = saturate((sumChannel * sumChannel) + sumChannel);
     float finalAlpha = modulateAlpha * alphaCtrl;
