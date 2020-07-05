@@ -43,6 +43,7 @@
         "no-use-before-define": "warn",
         "import/prefer-default-export": "off",
         "import/newline-after-import": "off",
+        "object-shorthand": "off",
         "no-console": "off",
         "no-unexpected-multiline": "error",
         "@typescript-eslint/explicit-function-return-type": "off",
