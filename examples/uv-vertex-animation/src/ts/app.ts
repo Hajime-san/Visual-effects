@@ -66,7 +66,7 @@ const init = async () => {
             value: 0.0,
         },
         speed: {
-            value: 0.8,
+            value: 0.5,
         },
         scale: {
             value: new THREE.Vector3(1, 1, 1),
@@ -80,7 +80,7 @@ const init = async () => {
             vertexShader: shaderData.vertex,
             fragmentShader: shaderData.fragment,
             depthTest: true,
-            // transparent: true,
+            transparent: true,
         });
 
         const model = gltf.scene;
@@ -105,7 +105,7 @@ const animate = () => {
 
     time += frame;
 
-    mesh.material.uniforms.time.value = time;
+    // mesh.material.uniforms.time.value = time;
 
     renderer.render(scene, camera);
 };

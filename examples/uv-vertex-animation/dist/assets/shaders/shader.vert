@@ -1,6 +1,13 @@
 varying vec2 vUv;
+varying vec2 uv1;
 
+uniform float time;
+uniform float speed;
 uniform vec3 scale;
+
+vec2 lerp(vec2 x, vec2 y, float a) {
+    return mix(x, y, fract(a));
+}
 
 void main() {
 
@@ -9,23 +16,12 @@ void main() {
     */
 
     vUv = uv;
-    // float rotation = 0.0;
 
-    // vec3 alignedPosition = vec3(position.x * scale.x, position.y * scale.y, position.z*scale.z);
+    float t = fract(time * speed);
 
-    // vec2 pos = alignedPosition.xy;
+    //uv1 = lerp(vUv, vUv, t);
 
-    // vec2 rotatedPosition;
-    // rotatedPosition.x = cos( rotation ) * alignedPosition.x - sin( rotation ) * alignedPosition.y;
-    // rotatedPosition.y = sin( rotation ) * alignedPosition.x + cos( rotation ) * alignedPosition.y;
-
-    // vec4 finalPosition;
-
-    // finalPosition = modelViewMatrix * vec4( 0.0, 0.0, 0.0, 1.0 );
-    // finalPosition.xy += rotatedPosition;
-    // finalPosition = projectionMatrix * finalPosition;
-
-    // gl_Position = finalPosition;
+   // uv1 =
 
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 
