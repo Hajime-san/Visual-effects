@@ -71,10 +71,22 @@ const init = async () => {
         scale: {
             value: new THREE.Vector3(1, 1, 1),
         },
+        map: {
+            value: 0,
+        },
     };
 
     loader.load('./assets/model/smoke.glb', gltf => {
         mesh = gltf.scene.children[0] as THREE.Mesh;
+
+        mesh.traverse(function(o) {
+            if (o.material) {
+                const oldMat = o.material;
+                uniforms.map.value = oldMat.map;
+            }
+        });
+        console.log(uniforms);
+
         mesh.material = new THREE.ShaderMaterial({
             uniforms: uniforms,
             vertexShader: shaderData.vertex,
@@ -88,14 +100,6 @@ const init = async () => {
         model.scale.set(10, 10, 10);
         scene.add(model);
     });
-
-    // material = new THREE.ShaderMaterial({
-    //     uniforms,
-    //     vertexShader: shaderData.vertex,
-    //     fragmentShader: shaderData.fragment,
-    //     depthTest: true,
-    //     transparent: true,
-    // });
 };
 
 const animate = () => {
@@ -105,7 +109,7 @@ const animate = () => {
 
     time += frame;
 
-    // mesh.material.uniforms.time.value = time;
+    mesh.material.uniforms.time.value = time;
 
     renderer.render(scene, camera);
 };

@@ -1,13 +1,4 @@
 varying vec2 vUv;
-varying vec2 uv1;
-
-uniform float time;
-uniform float speed;
-uniform vec3 scale;
-
-vec2 lerp(vec2 x, vec2 y, float a) {
-    return mix(x, y, fract(a));
-}
 
 void main() {
 
@@ -16,12 +7,6 @@ void main() {
     */
 
     vUv = uv;
-
-    float t = fract(time * speed);
-
-    //uv1 = lerp(vUv, vUv, t);
-
-   // uv1 =
 
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 
