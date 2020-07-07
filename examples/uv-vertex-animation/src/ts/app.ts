@@ -71,7 +71,7 @@ const init = async () => {
         scale: {
             value: new THREE.Vector3(1, 1, 1),
         },
-        map: {
+        texture: {
             value: 0,
         },
     };
@@ -79,13 +79,9 @@ const init = async () => {
     loader.load('./assets/model/smoke.glb', gltf => {
         mesh = gltf.scene.children[0] as THREE.Mesh;
 
-        mesh.traverse(function(o) {
-            if (o.material) {
-                const oldMat = o.material;
-                uniforms.map.value = oldMat.map;
-            }
+        mesh.traverse(m => {
+            uniforms.texture.value = m.material.map;
         });
-        console.log(uniforms);
 
         mesh.material = new THREE.ShaderMaterial({
             uniforms: uniforms,
@@ -97,6 +93,7 @@ const init = async () => {
 
         const model = gltf.scene;
         model.position.set(0, 5, 0);
+        // model.rotation.set(90, 0, 0);
         model.scale.set(10, 10, 10);
         scene.add(model);
     });
