@@ -6,7 +6,7 @@ import { loadShaders, ShaderData, onWindowResize } from '../../../modules/Util';
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
-let material: THREE.ShaderMaterial;
+let textureLoader: THREE.TextureLoader;
 let mesh: any;
 let uniforms: { [uniform: string]: THREE.IUniform };
 let time: number;
@@ -49,9 +49,15 @@ const init = async () => {
     directionalLight.position.set(1, 1, -10);
     scene.add(directionalLight);
 
+    const light = new THREE.AmbientLight(0xffffff, 1.0);
+    scene.add(light);
+
     const loader = new GLTFLoader();
 
-    // set uniform variable
+    // load textures
+    textureLoader = new THREE.TextureLoader();
+
+    const texture = textureLoader.load('./assets/images/smoke.png');
 
     // set shader
     shaderData = await loadShaders([
@@ -59,29 +65,20 @@ const init = async () => {
         { key: 'fragment', path: './assets/shaders/shader.frag' },
     ]);
 
-    // frame mix animation particle
-
     uniforms = {
+        texture: {
+            value: texture,
+        },
         time: {
             value: 0.0,
         },
         speed: {
             value: 0.5,
         },
-        scale: {
-            value: new THREE.Vector3(1, 1, 1),
-        },
-        texture: {
-            value: 0,
-        },
     };
 
-    loader.load('./assets/model/smoke.glb', gltf => {
+    loader.load('./assets/model/multi_uv.glb', gltf => {
         mesh = gltf.scene.children[0] as THREE.Mesh;
-
-        mesh.traverse(m => {
-            uniforms.texture.value = m.material.map;
-        });
 
         mesh.material = new THREE.ShaderMaterial({
             uniforms: uniforms,
@@ -92,8 +89,8 @@ const init = async () => {
         });
 
         const model = gltf.scene;
-        model.position.set(0, 5, 0);
-        // model.rotation.set(90, 0, 0);
+        model.position.set(30, 25, -20);
+        model.rotation.set(0, 0, 70);
         model.scale.set(10, 10, 10);
         scene.add(model);
     });
