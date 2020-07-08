@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import * as dat from 'dat.gui';
 import { loadShaders, ShaderData, onWindowResize } from '../../../modules/Util';
 
 let camera: THREE.PerspectiveCamera;
@@ -13,7 +14,22 @@ let time: number;
 let delta: THREE.Clock;
 let shaderData: ShaderData;
 
+class GuiUniforms {
+    speed: number;
+
+    constructor() {
+        this.speed = 0.5;
+    }
+}
+
 const init = async () => {
+    // dat GUI
+    const parameters = new GuiUniforms();
+    const gui = new dat.GUI();
+    gui.add(parameters, 'speed', 0.1, 5.0).onChange(() => {
+        uniforms.speed.value = parameters.speed;
+    });
+
     // intial settings
     const container = document.getElementById('canvas');
     camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 2000);
