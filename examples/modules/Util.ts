@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 // text sprite
 export const labelMaterial = (text: string) => {
@@ -57,6 +58,24 @@ export const loadShaders = async (shaderObject: Array<ShaderObject>) => {
     });
 
     return shaderData;
+};
+
+export const loadTexture = async (url: string) => {
+    const loader = new THREE.TextureLoader();
+    return new Promise((resolve, reject) => {
+        loader.load(url, texture => {
+            resolve(texture);
+        });
+    });
+};
+
+export const loadGLTF = async (url: string) => {
+    const loader = new GLTFLoader();
+    return new Promise((resolve, reject) => {
+        loader.load(url, object => {
+            resolve(object);
+        });
+    });
 };
 
 export const onWindowResize = (camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer) => {

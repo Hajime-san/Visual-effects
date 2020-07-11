@@ -1,9 +1,8 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 // import * as dat from 'dat.gui';
-import { loadShaders, ShaderData, onWindowResize } from '../../../modules/Util';
+import { loadShaders, ShaderData, onWindowResize, loadTexture, loadGLTF } from '../../../modules/Util';
 
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
@@ -27,6 +26,15 @@ const getMaxValue = (array: Array<number>) => {
     return array.reduce((a, b) => Math.max(Math.abs(a), Math.abs(b)));
 };
 
+const loadEXRtexture = async (url: string) => {
+    const loader = new EXRLoader();
+    return new Promise((resolve, reject) => {
+        loader.setDataType(THREE.FloatType).load(url, texture => {
+            resolve(texture);
+        });
+    });
+};
+
 const init = async () => {
     // dat GUI
     // const parameters = new GuiUniforms();
@@ -38,7 +46,7 @@ const init = async () => {
     // intial settings
     const container = document.getElementById('canvas');
     camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 2000);
-    camera.position.set(0, 10, 40);
+    camera.position.set(0, 30, 70);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -73,22 +81,9 @@ const init = async () => {
     const light = new THREE.AmbientLight(0xffffff, 1.0);
     scene.add(light);
 
-    const loader = new GLTFLoader();
+    const animationTexture = await loadEXRtexture('./assets/images/morphs.exr');
 
-    // load textures
-    const exrLoader = new EXRLoader();
-
-    let animationTexture;
-
-    exrLoader.setDataType(THREE.FloatType).load('./assets/images/morphs.exr', tex => {
-        animationTexture = tex;
-
-        tex.dispose();
-    });
-
-    const textureLoader = new THREE.TextureLoader();
-
-    const normalTexture = textureLoader.load('./assets/images/normals.bmp');
+    const normalTexture = await loadTexture('./assets/images/normals.bmp');
 
     // set shader
     shaderData = await loadShaders([
@@ -123,38 +118,36 @@ const init = async () => {
         },
     };
 
-    loader.load('./assets/model/suzanne.glb', gltf => {
-        mesh = gltf.scene.children[0] as THREE.Mesh;
+    const model: any = await loadGLTF('./assets/model/suzanne.glb');
 
-        const indicesLength = mesh.geometry.attributes.position.array.length / 4 / 3 + 1;
+    mesh = model.scene.children[0] as THREE.Mesh;
 
-        const id = new Float32Array(indicesLength);
+    const indicesLength = mesh.geometry.attributes.position.array.length / 4 / 3 + 1;
 
-        for (let i = 0; i < id.length; i += 1) {
-            id[i] = i;
-        }
+    const id = new Float32Array(indicesLength);
 
-        mesh.geometry.setAttribute('_id', new THREE.BufferAttribute(id, 1));
+    for (let i = 0; i < id.length; i += 1) {
+        id[i] = i;
+    }
 
-        uniforms.boudingBoxMax.value = mesh.geometry.boundingBox.max.x * 0.01;
+    mesh.geometry.setAttribute('_id', new THREE.BufferAttribute(id, 1));
 
-        uniforms.boundingBoxMin.value = mesh.geometry.boundingBox.min.x * 0.01;
+    uniforms.boudingBoxMax.value = mesh.geometry.boundingBox.max.x * 0.1;
 
-        uniforms.indicesLength.value = indicesLength;
+    uniforms.boundingBoxMin.value = mesh.geometry.boundingBox.min.x * 0.1;
 
-        mesh.material = new THREE.ShaderMaterial({
-            uniforms: uniforms,
-            vertexShader: shaderData.vertex,
-            fragmentShader: shaderData.fragment,
-            depthTest: true,
-            transparent: true,
-        });
+    uniforms.indicesLength.value = indicesLength;
 
-        const model = gltf.scene;
-        model.position.set(0, 10, 0);
-        model.scale.set(0.1, 0.1, 0.1);
-        scene.add(model);
+    mesh.material = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: shaderData.vertex,
+        fragmentShader: shaderData.fragment,
+        depthTest: true,
+        transparent: true,
     });
+
+    model.scene.position.set(0, 10, 0);
+    scene.add(model.scene);
 };
 
 const animate = () => {
