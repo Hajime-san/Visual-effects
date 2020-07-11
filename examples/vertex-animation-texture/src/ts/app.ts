@@ -23,6 +23,10 @@ let shaderData: ShaderData;
 //     }
 // }
 
+const getMaxValue = (array: Array<number>) => {
+    return array.reduce((a, b) => Math.max(Math.abs(a), Math.abs(b)));
+};
+
 const init = async () => {
     // dat GUI
     // const parameters = new GuiUniforms();
@@ -72,15 +76,19 @@ const init = async () => {
     const loader = new GLTFLoader();
 
     // load textures
-    const textureLoader = new EXRLoader();
+    const exrLoader = new EXRLoader();
 
-    let texture;
+    let animationTexture;
 
-    textureLoader.setDataType(THREE.HalfFloatType).load('./assets/images/morphs.exr', tex => {
-        texture = tex;
+    exrLoader.setDataType(THREE.FloatType).load('./assets/images/morphs.exr', tex => {
+        animationTexture = tex;
 
         tex.dispose();
     });
+
+    const textureLoader = new THREE.TextureLoader();
+
+    const normalTexture = textureLoader.load('./assets/images/normals.bmp');
 
     // set shader
     shaderData = await loadShaders([
@@ -89,20 +97,26 @@ const init = async () => {
     ]);
 
     uniforms = {
-        texture: {
-            value: texture,
+        animationTexture: {
+            value: animationTexture,
+        },
+        normalTexture: {
+            value: normalTexture,
         },
         time: {
             value: 0.0,
         },
-        speed: {
-            value: 0.5,
+        boudingBoxMax: {
+            value: 0,
         },
-        totalNum: {
-            value: 7.0,
+        boundingBoxMin: {
+            value: 0,
+        },
+        indicesLength: {
+            value: 0,
         },
         totalFrame: {
-            value: 60.0,
+            value: 60,
         },
         currentFrame: {
             value: currentFrame,
@@ -111,6 +125,22 @@ const init = async () => {
 
     loader.load('./assets/model/suzanne.glb', gltf => {
         mesh = gltf.scene.children[0] as THREE.Mesh;
+
+        const indicesLength = mesh.geometry.attributes.position.array.length / 4 / 3 + 1;
+
+        const id = new Float32Array(indicesLength);
+
+        for (let i = 0; i < id.length; i += 1) {
+            id[i] = i;
+        }
+
+        mesh.geometry.setAttribute('_id', new THREE.BufferAttribute(id, 1));
+
+        uniforms.boudingBoxMax.value = mesh.geometry.boundingBox.max.x * 0.01;
+
+        uniforms.boundingBoxMin.value = mesh.geometry.boundingBox.min.x * 0.01;
+
+        uniforms.indicesLength.value = indicesLength;
 
         mesh.material = new THREE.ShaderMaterial({
             uniforms: uniforms,
@@ -140,7 +170,7 @@ const animate = () => {
 
     mesh.material.uniforms.currentFrame.value = currentFrame;
 
-    if (currentFrame === mesh.material.uniforms.totalFrame) {
+    if (currentFrame === mesh.material.uniforms.totalFrame.value) {
         currentFrame = 0;
     }
 
