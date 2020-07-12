@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-// import * as dat from 'dat.gui';
+import * as dat from 'dat.gui';
 import { loadShaders, ShaderData, onWindowResize, loadTexture, loadGLTF } from '../../../modules/Util';
 
 let camera: THREE.PerspectiveCamera;
@@ -14,13 +14,13 @@ let delta: THREE.Clock;
 let currentFrame = 0;
 let shaderData: ShaderData;
 
-// class GuiUniforms {
-//     speed: number;
+class GuiUniforms {
+    totalFrame: number;
 
-//     constructor() {
-//         this.speed = 0.5;
-//     }
-// }
+    constructor() {
+        this.totalFrame = 60;
+    }
+}
 
 const getMaxValue = (array: Array<number>) => {
     return array.reduce((a, b) => Math.max(Math.abs(a), Math.abs(b)));
@@ -37,11 +37,12 @@ const loadEXRtexture = async (url: string) => {
 
 const init = async () => {
     // dat GUI
-    // const parameters = new GuiUniforms();
-    // const gui = new dat.GUI();
-    // gui.add(parameters, 'speed', 0.1, 5.0).onChange(() => {
-    //     uniforms.speed.value = parameters.speed;
-    // });
+    const parameters = new GuiUniforms();
+    const gui = new dat.GUI();
+    gui.add(parameters, 'totalFrame', 10, 120).onChange(() => {
+        uniforms.totalFrame.value = parameters.totalFrame;
+        currentFrame = 0;
+    });
 
     // intial settings
     const container = document.getElementById('canvas');
@@ -126,7 +127,7 @@ const init = async () => {
         },
         // total animation frame
         totalFrame: {
-            value: 60,
+            value: mesh.userData.totalFrame,
         },
         currentFrame: {
             value: currentFrame,
@@ -158,7 +159,7 @@ const animate = () => {
 
     mesh.material.uniforms.currentFrame.value = currentFrame;
 
-    if (currentFrame === mesh.material.uniforms.totalFrame.value) {
+    if (currentFrame === Math.floor(mesh.material.uniforms.totalFrame.value)) {
         currentFrame = 0;
     }
 
