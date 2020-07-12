@@ -1,14 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { loadShaders, ShaderData, labelMaterial, onWindowResize } from '../../../modules/Util';
+import { loadShaders, ShaderData, labelMaterial, onWindowResize, loadTexture } from '../../../modules/Util';
 import * as ParticleSystem from './ParticleSystem';
 
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
 let shaderMaterial: THREE.ShaderMaterial;
-let textureLoader: THREE.TextureLoader;
 let uniforms: { [uniform: string]: THREE.IUniform };
 let time: number;
 let delta: THREE.Clock;
@@ -68,10 +67,8 @@ const init = async () => {
     scene.add(directionalLight);
 
     // load textures
-    textureLoader = new THREE.TextureLoader();
-
-    loopAnimationTexture = textureLoader.load('./assets/images/T_Smoke_SubUV.png');
-    baseColorTexture = textureLoader.load('./assets/images/T_Smoke_Tiled_D.jpg');
+    loopAnimationTexture = await loadTexture('./assets/images/T_Smoke_SubUV.png');
+    baseColorTexture = await loadTexture('./assets/images/T_Smoke_Tiled_D.jpg');
 
     // set uniform variables
     uniforms = {

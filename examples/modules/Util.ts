@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 
 // text sprite
 export const labelMaterial = (text: string) => {
@@ -60,18 +60,22 @@ export const loadShaders = async (shaderObject: Array<ShaderObject>) => {
     return shaderData;
 };
 
+type resolveTexture = (value?: THREE.Texture) => void;
+
 export const loadTexture = async (url: string) => {
     const loader = new THREE.TextureLoader();
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve: resolveTexture, reject) => {
         loader.load(url, texture => {
             resolve(texture);
         });
     });
 };
 
+type resolveGLTF = (value?: GLTF) => void;
+
 export const loadGLTF = async (url: string) => {
     const loader = new GLTFLoader();
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve: resolveGLTF, reject) => {
         loader.load(url, object => {
             resolve(object);
         });

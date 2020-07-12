@@ -7,7 +7,7 @@ import { loadShaders, ShaderData, onWindowResize, loadTexture, loadGLTF } from '
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
-let mesh: any;
+let mesh: THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
 let uniforms: { [uniform: string]: THREE.IUniform };
 let time: number;
 let delta: THREE.Clock;
@@ -91,6 +91,18 @@ const init = async () => {
         { key: 'fragment', path: './assets/shaders/shader.frag' },
     ]);
 
+    const model = await loadGLTF('./assets/model/suzanne.glb');
+
+    mesh = model.scene.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
+
+    // set id for each vertices
+    const indicesLength = mesh.geometry.attributes.position.array.length / 4 / 3 + 1;
+    const id = new Float32Array(indicesLength);
+    for (let i = 0; i < id.length; i += 1) {
+        id[i] = i;
+    }
+    mesh.geometry.setAttribute('_id', new THREE.BufferAttribute(id, 1));
+
     uniforms = {
         animationTexture: {
             value: animationTexture,
@@ -101,15 +113,18 @@ const init = async () => {
         time: {
             value: 0.0,
         },
+        // set bounding box for correct scale
         boudingBoxMax: {
-            value: 0,
+            value: mesh.geometry.boundingBox.max.x * 0.1,
         },
+        // set bounding box for correct scale
         boundingBoxMin: {
-            value: 0,
+            value: mesh.geometry.boundingBox.min.x * 0.1,
         },
         indicesLength: {
-            value: 0,
+            value: indicesLength,
         },
+        // total animation frame
         totalFrame: {
             value: 60,
         },
@@ -117,26 +132,6 @@ const init = async () => {
             value: currentFrame,
         },
     };
-
-    const model: any = await loadGLTF('./assets/model/suzanne.glb');
-
-    mesh = model.scene.children[0] as THREE.Mesh;
-
-    const indicesLength = mesh.geometry.attributes.position.array.length / 4 / 3 + 1;
-
-    const id = new Float32Array(indicesLength);
-
-    for (let i = 0; i < id.length; i += 1) {
-        id[i] = i;
-    }
-
-    mesh.geometry.setAttribute('_id', new THREE.BufferAttribute(id, 1));
-
-    uniforms.boudingBoxMax.value = mesh.geometry.boundingBox.max.x * 0.1;
-
-    uniforms.boundingBoxMin.value = mesh.geometry.boundingBox.min.x * 0.1;
-
-    uniforms.indicesLength.value = indicesLength;
 
     mesh.material = new THREE.ShaderMaterial({
         uniforms: uniforms,

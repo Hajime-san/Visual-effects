@@ -1,14 +1,12 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { loadShaders, ShaderData, onWindowResize } from '../../../modules/Util';
+import { loadShaders, ShaderData, onWindowResize, loadTexture, loadGLTF } from '../../../modules/Util';
 
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
-let textureLoader: THREE.TextureLoader;
-let mesh: any;
+let mesh: THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
 let uniforms: { [uniform: string]: THREE.IUniform };
 let time: number;
 let delta: THREE.Clock;
@@ -68,12 +66,8 @@ const init = async () => {
     const light = new THREE.AmbientLight(0xffffff, 1.0);
     scene.add(light);
 
-    const loader = new GLTFLoader();
-
     // load textures
-    textureLoader = new THREE.TextureLoader();
-
-    const texture = textureLoader.load('./assets/images/smoke.png');
+    const texture = await loadTexture('./assets/images/smoke.png');
 
     // set shader
     shaderData = await loadShaders([
@@ -81,6 +75,7 @@ const init = async () => {
         { key: 'fragment', path: './assets/shaders/shader.frag' },
     ]);
 
+    // set uniform variable
     uniforms = {
         texture: {
             value: texture,
@@ -93,23 +88,22 @@ const init = async () => {
         },
     };
 
-    loader.load('./assets/model/multi_uv.glb', gltf => {
-        mesh = gltf.scene.children[0] as THREE.Mesh;
+    const model = await loadGLTF('./assets/model/multi_uv.glb');
 
-        mesh.material = new THREE.ShaderMaterial({
-            uniforms: uniforms,
-            vertexShader: shaderData.vertex,
-            fragmentShader: shaderData.fragment,
-            depthTest: true,
-            transparent: true,
-        });
+    mesh = model.scene.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
 
-        const model = gltf.scene;
-        model.position.set(30, 25, -20);
-        model.rotation.set(0, 0, 70);
-        model.scale.set(10, 10, 10);
-        scene.add(model);
+    mesh.material = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: shaderData.vertex,
+        fragmentShader: shaderData.fragment,
+        depthTest: true,
+        transparent: true,
     });
+
+    model.scene.position.set(30, 25, -20);
+    model.scene.rotation.set(0, 0, 70);
+    model.scene.scale.set(10, 10, 10);
+    scene.add(model.scene);
 };
 
 const animate = () => {

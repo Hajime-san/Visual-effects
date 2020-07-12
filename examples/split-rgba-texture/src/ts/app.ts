@@ -1,19 +1,17 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { loadShaders, ShaderData, onWindowResize } from '../../../modules/Util';
+import { loadShaders, ShaderData, onWindowResize, loadTexture } from '../../../modules/Util';
 
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
 let material: THREE.ShaderMaterial;
 let mesh: THREE.Mesh;
-let textureLoader: THREE.TextureLoader;
 let uniforms: { [uniform: string]: THREE.IUniform };
 let time: number;
 let delta: THREE.Clock;
 let shaderData: ShaderData;
-let loopAnimationTexture: THREE.Texture;
 
 class GuiUniforms {
     speed: number;
@@ -97,11 +95,7 @@ const init = async () => {
     scene.add(directionalLight);
 
     // load textures
-    textureLoader = new THREE.TextureLoader();
-
-    loopAnimationTexture = textureLoader.load('./assets/images/fire-simple-blend.png');
-
-    // set uniform variable
+    const loopAnimationTexture = await loadTexture('./assets/images/fire-simple-blend.png');
 
     // set shader
     shaderData = await loadShaders([
@@ -113,6 +107,7 @@ const init = async () => {
 
     const geometry = new THREE.PlaneGeometry(20, 20);
 
+    // set uniform variable
     uniforms = {
         loopAnimationTexture: { value: loopAnimationTexture },
         time: {
