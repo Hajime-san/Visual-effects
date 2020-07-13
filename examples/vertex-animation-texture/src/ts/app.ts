@@ -29,7 +29,7 @@ const getMaxValue = (array: Array<number>) => {
 const loadEXRtexture = async (url: string) => {
     const loader = new EXRLoader();
     return new Promise((resolve, reject) => {
-        loader.setDataType(THREE.FloatType).load(url, texture => {
+        loader.setDataType(THREE.HalfFloatType).load(url, texture => {
             resolve(texture);
         });
     });
