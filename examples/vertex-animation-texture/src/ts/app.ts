@@ -97,7 +97,7 @@ const init = async () => {
     mesh = model.scene.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
 
     // set id for each vertices
-    const indicesLength = mesh.geometry.attributes.position.array.length / 4 / 3 + 1;
+    const indicesLength = 507;
     const id = new Float32Array(indicesLength);
     for (let i = 0; i < id.length; i += 1) {
         id[i] = i;
