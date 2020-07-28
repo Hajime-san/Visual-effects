@@ -9,7 +9,9 @@ let renderer: THREE.WebGLRenderer;
 let geometry: THREE.BufferGeometry;
 let material: THREE.ShaderMaterial;
 let mesh: THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
+let gltfMesh: THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
 let uniforms: { [uniform: string]: THREE.IUniform };
+let gltfUniforms: { [uniform: string]: THREE.IUniform };
 let time: number;
 let delta: THREE.Clock;
 let shaderData: ShaderData;
@@ -68,7 +70,7 @@ const init = async () => {
     scene.add(meshFloor);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(1, 1, -10);
+    directionalLight.position.set(10, 1, 10);
     scene.add(directionalLight);
 
     const light = new THREE.AmbientLight(0xffffff, 1.0);
@@ -82,6 +84,8 @@ const init = async () => {
     shaderData = await loadShaders([
         { key: 'vertex', path: './assets/shaders/shader.vert' },
         { key: 'fragment', path: './assets/shaders/shader.frag' },
+        { key: 'gltfVert', path: './assets/shaders/gltfShader.vert' },
+        { key: 'gltfFrag', path: './assets/shaders/gltfShader.frag' },
     ]);
 
     geometry = new THREE.PlaneBufferGeometry(50, 50);
@@ -115,8 +119,32 @@ const init = async () => {
 
     mesh = new THREE.Mesh(geometry, material);
 
-    mesh.position.set(0, 30, 0);
+    mesh.position.set(-30, 30, 0);
     scene.add(mesh);
+
+    const model = await loadGLTF('./assets/model/suzanne.glb');
+
+    gltfMesh = model.scene.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
+
+    gltfUniforms = {
+        noiseTexture: {
+            value: noiseTexture,
+        },
+        time: {
+            value: 0.0,
+        },
+    };
+
+    gltfMesh.material = new THREE.ShaderMaterial({
+        uniforms: gltfUniforms,
+        vertexShader: shaderData.gltfVert,
+        fragmentShader: shaderData.gltfFrag,
+        depthTest: true,
+        transparent: true,
+    });
+    gltfMesh.scale.set(10, 10, 10);
+    gltfMesh.position.set(30, 10, 0);
+    scene.add(gltfMesh);
 };
 
 const animate = () => {
@@ -127,6 +155,8 @@ const animate = () => {
     time += frame;
 
     mesh.material.uniforms.time.value = time;
+
+    gltfMesh.material.uniforms.time.value = time;
 
     renderer.render(scene, camera);
 };
