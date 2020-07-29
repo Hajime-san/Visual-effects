@@ -9,9 +9,9 @@ let renderer: THREE.WebGLRenderer;
 let geometry: THREE.BufferGeometry;
 let material: THREE.ShaderMaterial;
 let mesh: THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
-let gltfMesh: THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
+let gltfMesh: THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 let uniforms: { [uniform: string]: THREE.IUniform };
-let gltfUniforms: { [uniform: string]: THREE.IUniform };
+let gltfUniforms: { [uniform: string]: any };
 let time: number;
 let delta: THREE.Clock;
 let shaderData: ShaderData;
@@ -114,7 +114,6 @@ const init = async () => {
         fragmentShader: shaderData.fragment,
         depthTest: true,
         transparent: true,
-        // blending: THREE.AdditiveBlending,
     });
 
     mesh = new THREE.Mesh(geometry, material);
@@ -124,7 +123,7 @@ const init = async () => {
 
     const model = await loadGLTF('./assets/model/suzanne.glb');
 
-    gltfMesh = model.scene.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
+    gltfMesh = model.scene.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
     gltfUniforms = {
         noiseTexture: {
@@ -133,10 +132,13 @@ const init = async () => {
         time: {
             value: 0.0,
         },
+
+        ...THREE.UniformsLib.lights,
     };
 
     gltfMesh.material = new THREE.ShaderMaterial({
         uniforms: gltfUniforms,
+        lights: true,
         vertexShader: shaderData.gltfVert,
         fragmentShader: shaderData.gltfFrag,
         depthTest: true,
