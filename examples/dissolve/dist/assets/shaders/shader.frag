@@ -1,4 +1,5 @@
 varying vec2 vUv;
+varying vec3 vPosition;
 
 uniform float time;
 uniform sampler2D noiseTexture;
@@ -15,13 +16,15 @@ void main() {
 
     float repeat = abs(fract(time * 0.5) * 2.0);
 
-    vec4 noiseMap = texture2D(noiseTexture, vUv) + (1.0 - vUv.y) * strength;
+    float transitionDirection = 1.0 - vPosition.x;
+
+    vec4 noiseMap = texture2D(noiseTexture, vUv) + transitionDirection * strength;
 
     float intensity = ((edgeWidth + 1.0) * (strength - thresHold)) * repeat;
 
-    float mixed = smoothstep(intensity - edgeWidth, intensity, noiseMap.r);
+    float disSolve = smoothstep(intensity - edgeWidth, intensity, noiseMap.r);
 
-    vec4 finalColor = vec4(edgeColor * (1.0 - mixed), mixed);
+    vec4 finalColor = vec4(edgeColor * (1.0 - disSolve), disSolve);
 
     gl_FragColor = finalColor;
 }

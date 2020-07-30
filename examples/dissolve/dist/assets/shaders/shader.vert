@@ -1,4 +1,5 @@
 varying vec2 vUv;
+varying vec3 vPosition;
 
 uniform vec3 scale;
 
@@ -9,6 +10,8 @@ void main() {
     */
 
     vUv = uv;
+    vPosition = position / 25.0;
+
     float rotation = 0.0;
 
     vec3 alignedPosition = vec3(position.x * scale.x, position.y * scale.y, position.z*scale.z);

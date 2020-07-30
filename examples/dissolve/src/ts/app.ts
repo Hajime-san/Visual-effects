@@ -69,6 +69,7 @@ const init = async () => {
     );
     scene.add(meshFloor);
 
+    // lights
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(10, 1, 10);
     scene.add(directionalLight);
@@ -88,6 +89,7 @@ const init = async () => {
         { key: 'gltfFrag', path: './assets/shaders/gltfShader.frag' },
     ]);
 
+    // billboard square mesh
     geometry = new THREE.PlaneBufferGeometry(50, 50);
 
     uniforms = {
@@ -121,6 +123,7 @@ const init = async () => {
     mesh.position.set(-30, 30, 0);
     scene.add(mesh);
 
+    // gltf mesh
     const model = await loadGLTF('./assets/model/suzanne.glb');
 
     gltfMesh = model.scene.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
