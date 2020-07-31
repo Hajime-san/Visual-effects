@@ -13,6 +13,7 @@ uniform sampler2D noiseTexture;
 float thresHold = 0.5;
 float edgeWidth = 0.2;
 float strength = 2.0;
+float speed = 0.5;
 
 vec3 edgeColor = vec3(1.0, 0.0, 0.0);
 
@@ -47,7 +48,7 @@ void main() {
     reflectedLight.directDiffuse = lightFront;
     vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
 
-    float repeat = abs(fract(time * 0.5) * 2.0);
+    float repeat = abs(fract(time * speed) * (strength + thresHold + edgeWidth));
 
     float transitionDirection = 1.0 - vPosition.y;
 

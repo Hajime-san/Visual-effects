@@ -11,21 +11,21 @@ let material: THREE.ShaderMaterial;
 let mesh: THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 let gltfMesh: THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 let uniforms: { [uniform: string]: THREE.IUniform };
-let gltfUniforms: { [uniform: string]: any };
+let gltfUniforms: { [uniform: string]: THREE.IUniform };
 let time: number;
 let delta: THREE.Clock;
 let shaderData: ShaderData;
 
-class GuiUniforms {
-    thresHold: number;
+// class GuiUniforms {
+//     thresHold: number;
 
-    edgeWidth: number;
+//     edgeWidth: number;
 
-    constructor() {
-        this.thresHold = 0.5;
-        this.edgeWidth = 0.3;
-    }
-}
+//     constructor() {
+//         this.thresHold = 0.5;
+//         this.edgeWidth = 0.3;
+//     }
+// }
 
 const init = async () => {
     // dat GUI
@@ -99,12 +99,6 @@ const init = async () => {
         time: {
             value: 0.0,
         },
-        // thresHold: {
-        //     value: parameters.thresHold,
-        // },
-        // edgeWidth: {
-        //     value: parameters.edgeWidth,
-        // },
         scale: {
             value: new THREE.Vector3(1, 1, 1),
         },
@@ -135,7 +129,7 @@ const init = async () => {
         time: {
             value: 0.0,
         },
-
+        // lights
         ...THREE.UniformsLib.lights,
     };
 
