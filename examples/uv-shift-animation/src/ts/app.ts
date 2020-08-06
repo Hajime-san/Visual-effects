@@ -1,12 +1,14 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
+import { Reflector } from '../../../modules/ReflectionMaterial/reflector';
 import { loadShaders, ShaderData, onWindowResize, loadTexture, loadGLTF } from '../../../modules/Util';
 
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
 let mesh: THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
+let meshFloor: THREE.Mesh;
 let uniforms: { [uniform: string]: THREE.IUniform };
 let time: number;
 let delta: THREE.Clock;
@@ -49,15 +51,26 @@ const init = async () => {
     window.addEventListener('resize', () => onWindowResize(camera, renderer), false);
 
     // floor
-    const meshFloor = new THREE.Mesh(
-        new THREE.BoxGeometry(200, 0.1, 200),
-        new THREE.MeshStandardMaterial({
-            color: 0x808080,
-            roughness: 0,
-            metalness: 0.5,
-        })
-    );
+    const mirrorGeometry = new THREE.PlaneGeometry(200, 200);
+    meshFloor = new Reflector(mirrorGeometry, {
+        clipBias: 0.05,
+        textureWidth: window.innerWidth * window.devicePixelRatio,
+        textureHeight: window.innerHeight * window.devicePixelRatio,
+        color: new THREE.Color(0x777777),
+    });
+    meshFloor.rotateX(-Math.PI / 2);
+    meshFloor.receiveShadow = true;
     scene.add(meshFloor);
+
+    const sphere = new THREE.SphereGeometry(5);
+    const sphereMaterial = new THREE.MeshStandardMaterial({
+        color: 0xff0000,
+        roughness: 0,
+        metalness: 0.5,
+    });
+    const sphereMesh = new THREE.Mesh(sphere, sphereMaterial);
+    sphereMesh.position.set(10, 10, 0);
+    scene.add(sphereMesh);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(1, 1, -10);
@@ -114,6 +127,8 @@ const animate = () => {
     time += frame;
 
     mesh.material.uniforms.time.value = time;
+
+    // meshFloor.material.envMap = cubeRenderTarget.texture;
 
     renderer.render(scene, camera);
 };
