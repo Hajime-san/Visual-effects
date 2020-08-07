@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { Reflector } from '../../../modules/ReflectionMaterial/reflector';
+import { ReflectiveMesh } from '../../../modules/ReflectionMaterial/reflector';
 import { loadShaders, ShaderData, onWindowResize, loadTexture, loadGLTF } from '../../../modules/Util';
 
 let camera: THREE.PerspectiveCamera;
@@ -52,12 +52,15 @@ const init = async () => {
 
     // floor
     const mirrorGeometry = new THREE.PlaneGeometry(200, 200);
-    meshFloor = new Reflector(mirrorGeometry, {
+    meshFloor = await ReflectiveMesh.new(mirrorGeometry, {
         clipBias: 0.05,
         textureWidth: window.innerWidth * window.devicePixelRatio,
         textureHeight: window.innerHeight * window.devicePixelRatio,
         color: new THREE.Color(0x777777),
+        colorTexturePath: './assets/images/T_Metal_Rust_D.png',
+        normalTexturePath: './assets/images/T_Metal_Rust_N.png',
     });
+
     meshFloor.rotateX(-Math.PI / 2);
     meshFloor.receiveShadow = true;
     scene.add(meshFloor);
