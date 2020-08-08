@@ -7,18 +7,19 @@ import * as THREE from 'three';
 import { loadShaders, ShaderData, loadTexture } from '../Util';
 
 type ReflectiveMeshParameters = {
-    color?: THREE.Color;
     textureWidth?: number;
     textureHeight?: number;
     clipBias?: number;
     encoding?: THREE.TextureEncoding;
-    colorTexturePath?: string;
-    normalTexturePath?: string;
+    roughness?: number;
+    metalness?: number;
+    color?: THREE.Color;
+    mapPath?: string;
+    normalMapPath?: string;
+    roughnessMapPath?: string;
 };
 
 export class ReflectiveMesh extends THREE.Mesh {
-    private color: THREE.Color;
-
     private textureWidth: number;
 
     private textureHeight: number;
@@ -27,9 +28,17 @@ export class ReflectiveMesh extends THREE.Mesh {
 
     private encoding: THREE.TextureEncoding;
 
-    private colorTexture: THREE.Texture;
+    private roughness: number;
 
-    private normalTexture: THREE.Texture;
+    private metalness: number;
+
+    private color: THREE.Color;
+
+    private map: THREE.Texture;
+
+    private normalMap: THREE.Texture;
+
+    private roughnessMap: THREE.Texture;
 
     private shaderData: ShaderData;
 
@@ -38,13 +47,16 @@ export class ReflectiveMesh extends THREE.Mesh {
     constructor(geometry: THREE.Geometry, options: ReflectiveMeshParameters) {
         super(geometry);
 
-        this.color = options.color !== undefined ? new THREE.Color(options.color) : new THREE.Color(0x7f7f7f);
         this.textureWidth = options.textureWidth || 512;
         this.textureHeight = options.textureHeight || 512;
         this.clipBias = options.clipBias || 0;
         this.encoding = options.encoding !== undefined ? options.encoding : THREE.LinearEncoding;
-        this.colorTexture = options.colorTexturePath !== undefined ? this.colorTexture : null;
-        this.normalTexture = options.normalTexturePath !== undefined ? this.normalTexture : null;
+        this.roughness = options.roughness !== undefined ? options.roughness : 0;
+        this.metalness = options.metalness !== undefined ? options.metalness : 0;
+        this.color = options.color !== undefined ? new THREE.Color(options.color) : new THREE.Color(0x7f7f7f);
+        this.map = options.mapPath !== undefined ? this.map : null;
+        this.normalMap = options.normalMapPath !== undefined ? this.normalMap : null;
+        this.roughnessMap = options.roughnessMapPath !== undefined ? this.roughnessMap : null;
 
         this.init();
     }
@@ -84,23 +96,36 @@ export class ReflectiveMesh extends THREE.Mesh {
                 value: null,
             },
 
-            tDiffuse: {
+            reflectionTexture: {
                 value: null,
+            },
+
+            roughness: {
+                value: 0,
+            },
+
+            metalness: {
+                value: 0,
             },
 
             textureMatrix: {
                 value: null,
             },
 
-            colorTexture: {
+            map: {
                 value: null,
             },
 
-            normalTexture: {
+            normalMap: {
+                value: null,
+            },
+
+            roughnessMap: {
                 value: null,
             },
 
             ...THREE.UniformsLib.lights,
+            ...THREE.ShaderLib.physical.uniforms,
         };
 
         this.material = new THREE.ShaderMaterial({
@@ -108,15 +133,24 @@ export class ReflectiveMesh extends THREE.Mesh {
             vertexShader: this.shaderData.vertex,
             fragmentShader: this.shaderData.fragment,
             lights: true,
+            extensions: {
+                derivatives: true,
+            },
         });
 
-        this.material.uniforms.tDiffuse.value = renderTarget.texture;
-        this.material.uniforms.color.value = this.color;
+        this.material.uniforms.reflectionTexture.value = renderTarget.texture;
         this.material.uniforms.textureMatrix.value = textureMatrix;
 
-        // textures(optional)
-        this.material.uniforms.colorTexture.value = this.colorTexture;
-        this.material.uniforms.normalTexture.value = this.normalTexture;
+        // shading
+        this.material.uniforms.roughness.value = this.roughness;
+        this.material.uniforms.metalness.value = this.metalness;
+
+        this.material.uniforms.color.value = this.color;
+
+        // textures
+        this.material.uniforms.map.value = this.map;
+        this.material.uniforms.normalMap.value = this.normalMap;
+        this.material.uniforms.roughnessMap.value = this.roughnessMap;
 
         this.onBeforeRender = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera) => {
             reflectorWorldPosition.setFromMatrixPosition(this.matrixWorld);
@@ -223,11 +257,14 @@ export class ReflectiveMesh extends THREE.Mesh {
     }
 
     static async new(geometry: THREE.Geometry, options: ReflectiveMeshParameters) {
-        if (typeof options.colorTexturePath === 'string') {
-            this.prototype.colorTexture = await loadTexture(options.colorTexturePath);
+        if (typeof options.mapPath === 'string') {
+            this.prototype.map = await loadTexture(options.mapPath);
         }
-        if (typeof options.normalTexturePath === 'string') {
-            this.prototype.normalTexture = await loadTexture(options.normalTexturePath);
+        if (typeof options.normalMapPath === 'string') {
+            this.prototype.normalMap = await loadTexture(options.normalMapPath);
+        }
+        if (typeof options.roughnessMapPath === 'string') {
+            this.prototype.roughnessMap = await loadTexture(options.roughnessMapPath);
         }
 
         // set Promise property initial

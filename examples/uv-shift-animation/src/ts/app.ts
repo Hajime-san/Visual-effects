@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { ReflectiveMesh } from '../../../modules/ReflectionMaterial/reflector';
+import { ReflectiveMesh } from '../../../modules/ReflectionMaterial/ReflectiveMesh';
 import { loadShaders, ShaderData, onWindowResize, loadTexture, loadGLTF } from '../../../modules/Util';
 
 let camera: THREE.PerspectiveCamera;
@@ -53,33 +53,26 @@ const init = async () => {
     // floor
     const mirrorGeometry = new THREE.PlaneGeometry(200, 200);
     meshFloor = await ReflectiveMesh.new(mirrorGeometry, {
-        clipBias: 0.05,
         textureWidth: window.innerWidth * window.devicePixelRatio,
         textureHeight: window.innerHeight * window.devicePixelRatio,
+        clipBias: 0.05,
+        roughness: 0.5,
+        metalness: 0.5,
         color: new THREE.Color(0x777777),
-        colorTexturePath: './assets/images/T_Metal_Rust_D.png',
-        normalTexturePath: './assets/images/T_Metal_Rust_N.png',
+        mapPath: './assets/images/Metal002_2K_Color.jpg',
+        normalMapPath: './assets/images/Metal002_2K_Normal.jpg',
+        roughnessMapPath: './assets/images/Metal002_2K_Roughness.jpg',
     });
 
     meshFloor.rotateX(-Math.PI / 2);
     meshFloor.receiveShadow = true;
     scene.add(meshFloor);
 
-    const sphere = new THREE.SphereGeometry(5);
-    const sphereMaterial = new THREE.MeshStandardMaterial({
-        color: 0xff0000,
-        roughness: 0,
-        metalness: 0.5,
-    });
-    const sphereMesh = new THREE.Mesh(sphere, sphereMaterial);
-    sphereMesh.position.set(10, 10, 0);
-    scene.add(sphereMesh);
-
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(1, 1, -10);
+    directionalLight.position.set(1, 100, -10);
     scene.add(directionalLight);
 
-    const light = new THREE.AmbientLight(0xffffff, 1.0);
+    const light = new THREE.AmbientLight(0xffffff, 1);
     scene.add(light);
 
     // load textures
