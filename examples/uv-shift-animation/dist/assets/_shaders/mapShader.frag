@@ -65,30 +65,30 @@ uniform sampler2D roughnessMap;
 uniform mat3 normalMatrix;
 
 vec4 normal;
-
-float blendOverlay( float base, float blend ) {
-
-	return( base < 0.5 ? ( 2.0 * base * blend ) : ( 1.0 - 2.0 * ( 1.0 - base ) * ( 1.0 - blend ) ) );
-
-}
-
-vec3 blendOverlay( vec3 base, vec3 blend ) {
-
-	return vec3( blendOverlay( base.r, blend.r ), blendOverlay( base.g, blend.g ), blendOverlay( base.b, blend.b ) );
-
-}
+// non-metal material's Frensnel coefficient
+float nonMetalMaterialFrensnel = 0.04;
 
 void main() {
 
     #include <clipping_planes_fragment>
 
+	vec4 reflectionMap = texture2DProj( reflectionTexture, projectionUv );
+
+	vec4 roughnessTex = texture2D( roughnessMap, vUv );
+
     vec4 diffuseColor =  texture2D( map, vUv );
-    diffuseColor *= 0.5;
+
+	diffuseColor.rgb += (reflectionMap * ( max( nonMetalMaterialFrensnel, roughnessTex.g - roughness) )).rgb;
+
     ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
     vec3 totalEmissiveRadiance = emissive;
 
 	#include <logdepthbuf_fragment>
-    #include <map_fragment>
+
+	vec4 texelColor = texture2D( map, vUv );
+	texelColor = mapTexelToLinear( texelColor );
+	diffuseColor *= texelColor;
+    // #include <map_fragment>
 	#include <color_fragment>
 	#include <alphamap_fragment>
 	#include <alphatest_fragment>
@@ -119,14 +119,6 @@ void main() {
 	#ifdef TRANSMISSION
 		diffuseColor.a *= saturate( 1. - totalTransmission + linearToRelativeLuminance( reflectedLight.directSpecular + reflectedLight.indirectSpecular ) );
 	#endif
-
-    vec3 reflectionMap = texture2DProj( reflectionTexture, projectionUv ).rgb;
-
-    vec4 rougnessTex = texture2D( roughnessMap, vUv );
-
-    //outgoingLight *= rougnessTex.rgb;
-
-    outgoingLight += vec3( blendOverlay( reflectionMap, outgoingLight ));
 
 	gl_FragColor = vec4( outgoingLight, diffuseColor.a );
 

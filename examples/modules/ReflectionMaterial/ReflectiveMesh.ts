@@ -51,8 +51,8 @@ export class ReflectiveMesh extends THREE.Mesh {
         this.textureHeight = options.textureHeight || 512;
         this.clipBias = options.clipBias || 0;
         this.encoding = options.encoding !== undefined ? options.encoding : THREE.LinearEncoding;
-        this.roughness = options.roughness !== undefined ? options.roughness : 0;
-        this.metalness = options.metalness !== undefined ? options.metalness : 0;
+        this.roughness = options.roughness !== undefined ? options.roughness : 0.5;
+        this.metalness = options.metalness !== undefined ? options.metalness : 0.5;
         this.color = options.color !== undefined ? new THREE.Color(options.color) : new THREE.Color(0x7f7f7f);
         this.map = options.mapPath !== undefined ? this.map : null;
         this.normalMap = options.normalMapPath !== undefined ? this.normalMap : null;

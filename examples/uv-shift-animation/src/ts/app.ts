@@ -56,7 +56,7 @@ const init = async () => {
         textureWidth: window.innerWidth * window.devicePixelRatio,
         textureHeight: window.innerHeight * window.devicePixelRatio,
         clipBias: 0.05,
-        roughness: 0.5,
+        roughness: 0.1,
         metalness: 0.5,
         color: new THREE.Color(0x777777),
         mapPath: './assets/images/Metal002_2K_Color.jpg',
