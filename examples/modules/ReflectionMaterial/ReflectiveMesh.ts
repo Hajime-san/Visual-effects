@@ -19,7 +19,7 @@ type ReflectiveMeshParameters = {
     roughnessMapPath?: string;
 };
 
-export class ReflectiveMesh extends THREE.Mesh {
+export class ReflectiveMesh extends THREE.Mesh<THREE.BufferGeometry | THREE.Geometry, THREE.ShaderMaterial> {
     private textureWidth: number;
 
     private textureHeight: number;
@@ -269,8 +269,8 @@ export class ReflectiveMesh extends THREE.Mesh {
 
         // set Promise property initial
         this.prototype.shaderData = await loadShaders([
-            { key: 'vertex', path: './assets/_shaders/mapShader.vert' },
-            { key: 'fragment', path: './assets/_shaders/mapShader.frag' },
+            { key: 'vertex', path: './assets/shaders/mapShader.vert' },
+            { key: 'fragment', path: './assets/shaders/mapShader.frag' },
         ]);
 
         const self = new ReflectiveMesh(geometry, options);

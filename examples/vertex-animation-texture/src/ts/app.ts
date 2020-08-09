@@ -7,7 +7,7 @@ import { loadShaders, ShaderData, onWindowResize, loadTexture, loadGLTF } from '
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
-let mesh: THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
+let mesh: THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 let uniforms: { [uniform: string]: THREE.IUniform };
 let time: number;
 let delta: THREE.Clock;
@@ -94,7 +94,7 @@ const init = async () => {
 
     const model = await loadGLTF('./assets/model/suzanne.glb');
 
-    mesh = model.scene.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
+    mesh = model.scene.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
     // set id for each vertices
     const indicesLength = 507;
