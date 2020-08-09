@@ -20,25 +20,25 @@ const VATdata = data[0];
 class GuiUniforms {
     totalFrame: number;
 
-    constructor() {
-        this.totalFrame = 60;
+    constructor(totalFrame: number) {
+        this.totalFrame = totalFrame;
     }
 }
 
-const loadEXRtexture = async (url: string) => {
-    const loader = new EXRLoader();
-    return new Promise((resolve, reject) => {
-        loader.setDataType(THREE.HalfFloatType).load(url, texture => {
-            resolve(texture);
-        });
-    });
-};
+// const loadEXRtexture = async (url: string) => {
+//     const loader = new EXRLoader();
+//     return new Promise((resolve, reject) => {
+//         loader.setDataType(THREE.HalfFloatType).load(url, texture => {
+//             resolve(texture);
+//         });
+//     });
+// };
 
 const init = async () => {
     // dat GUI
-    const parameters = new GuiUniforms();
+    const parameters = new GuiUniforms(VATdata.numOfFrames);
     const gui = new dat.GUI();
-    gui.add(parameters, 'totalFrame', 10, 120).onChange(() => {
+    gui.add(parameters, 'totalFrame', VATdata.numOfFrames * 0.5, VATdata.numOfFrames * 2).onChange(() => {
         uniforms.totalFrame.value = parameters.totalFrame;
         currentFrame = 0;
     });
