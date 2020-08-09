@@ -4,6 +4,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
 import { loadShaders, ShaderData, onWindowResize, loadTexture, loadGLTF } from '../../../modules/Util';
 
+import data from '../../dist/assets/model/box.json';
+
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
@@ -13,6 +15,7 @@ let time: number;
 let delta: THREE.Clock;
 let currentFrame = 0;
 let shaderData: ShaderData;
+const VATdata = data[0];
 
 class GuiUniforms {
     totalFrame: number;
@@ -21,10 +24,6 @@ class GuiUniforms {
         this.totalFrame = 60;
     }
 }
-
-const getMaxValue = (array: Array<number>) => {
-    return array.reduce((a, b) => Math.max(Math.abs(a), Math.abs(b)));
-};
 
 const loadEXRtexture = async (url: string) => {
     const loader = new EXRLoader();
@@ -82,9 +81,7 @@ const init = async () => {
     const light = new THREE.AmbientLight(0xffffff, 1.0);
     scene.add(light);
 
-    const animationTexture = await loadEXRtexture('./assets/images/morphs.exr');
-
-    const normalTexture = await loadTexture('./assets/images/normals.bmp');
+    const positionMap = await loadTexture('./assets/images/box.bmp');
 
     // set shader
     shaderData = await loadShaders([
@@ -92,45 +89,37 @@ const init = async () => {
         { key: 'fragment', path: './assets/shaders/shader.frag' },
     ]);
 
-    const model = await loadGLTF('./assets/model/suzanne.glb');
+    const model = await loadGLTF('./assets/model/box.glb');
 
-    mesh = model.scene.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
+    mesh = model.scenes[0].children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
     // set id for each vertices
-    const indicesLength = 507;
-    const id = new Float32Array(indicesLength);
-    for (let i = 0; i < id.length; i += 1) {
-        id[i] = i;
-    }
-    mesh.geometry.setAttribute('_id', new THREE.BufferAttribute(id, 1));
+    const indicesLength = mesh.geometry.attributes.position.count - 1;
 
     uniforms = {
-        animationTexture: {
-            value: animationTexture,
-        },
-        normalTexture: {
-            value: normalTexture,
+        positionMap: {
+            value: positionMap,
         },
         time: {
             value: 0.0,
         },
         // set bounding box for correct scale
         boudingBoxMax: {
-            value: mesh.geometry.boundingBox.max.x * 0.1,
+            value: VATdata.posMax,
         },
         // set bounding box for correct scale
         boundingBoxMin: {
-            value: mesh.geometry.boundingBox.min.x * 0.1,
+            value: VATdata.posMin,
         },
         indicesLength: {
             value: indicesLength,
         },
         // total animation frame
         totalFrame: {
-            value: mesh.userData.totalFrame,
+            value: VATdata.numOfFrames,
         },
         currentFrame: {
-            value: currentFrame,
+            value: 0,
         },
     };
 
@@ -142,8 +131,9 @@ const init = async () => {
         transparent: true,
     });
 
-    model.scene.position.set(0, 10, 0);
-    scene.add(model.scene);
+    mesh.position.set(0, 10, 0);
+    mesh.scale.set(0.1, 0.1, 0.1);
+    scene.add(mesh);
 };
 
 const animate = () => {
