@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
 import { loadShaders, ShaderData, onWindowResize, loadTexture, loadGLTF } from '../../../modules/Util';
 
-import data from '../../dist/assets/model/box.json';
+import data from '../../dist/assets/model/RubberToy.json';
 
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
@@ -25,14 +25,16 @@ class GuiUniforms {
     }
 }
 
-// const loadEXRtexture = async (url: string) => {
-//     const loader = new EXRLoader();
-//     return new Promise((resolve, reject) => {
-//         loader.setDataType(THREE.HalfFloatType).load(url, texture => {
-//             resolve(texture);
-//         });
-//     });
-// };
+type resolveTexture = (value?: THREE.Texture) => void;
+
+const loadEXRtexture = async (url: string) => {
+    const loader = new EXRLoader();
+    return new Promise((resolve: resolveTexture, reject) => {
+        loader.setDataType(THREE.HalfFloatType).load(url, texture => {
+            resolve(texture);
+        });
+    });
+};
 
 const init = async () => {
     // dat GUI
@@ -81,7 +83,7 @@ const init = async () => {
     const light = new THREE.AmbientLight(0xffffff, 1.0);
     scene.add(light);
 
-    const positionMap = await loadTexture('./assets/images/box.bmp');
+    const positionMap = await loadEXRtexture('./assets/images/RubberToy.exr');
 
     // set shader
     shaderData = await loadShaders([
@@ -89,27 +91,37 @@ const init = async () => {
         { key: 'fragment', path: './assets/shaders/shader.frag' },
     ]);
 
-    const model = await loadGLTF('./assets/model/box.glb');
+    const model = await loadGLTF('./assets/model/RubberToy.glb');
 
     mesh = model.scenes[0].children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
-    // set id for each vertices
-    const indicesLength = mesh.geometry.attributes.position.count - 1;
+    let map = null;
+
+    model.parser.associations.forEach((value, key) => {
+        if (value.type === 'textures' && value.index === 0) {
+            map = key;
+        }
+    });
+
+    const indicesLength = positionMap.image.width;
 
     uniforms = {
         positionMap: {
             value: positionMap,
+        },
+        map: {
+            value: map,
         },
         time: {
             value: 0.0,
         },
         // set bounding box for correct scale
         boudingBoxMax: {
-            value: VATdata.posMax,
+            value: VATdata.posMax * 0.01,
         },
         // set bounding box for correct scale
         boundingBoxMin: {
-            value: VATdata.posMin,
+            value: VATdata.posMin * 0.01,
         },
         indicesLength: {
             value: indicesLength,
@@ -132,7 +144,7 @@ const init = async () => {
     });
 
     mesh.position.set(0, 10, 0);
-    mesh.scale.set(0.1, 0.1, 0.1);
+    mesh.scale.set(10, 10, 10);
     scene.add(mesh);
 };
 
