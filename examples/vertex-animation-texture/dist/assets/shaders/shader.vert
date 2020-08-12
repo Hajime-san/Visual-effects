@@ -1,3 +1,4 @@
+#include <encodings_pars_fragment>
 varying vec2 vUv;
 varying vec4 vColor;
 
@@ -20,7 +21,7 @@ void main() {
 
     vec3 texelPosition = texture2D( positionMap , vec2( pu , pv ) ).rgb * range + boundingBoxMin;
 
-    vec3 tColor = texture2D( map, vUv ).rgb;
+    vec3 tColor = texture2D( map, uv ).rgb;
     vColor = vec4( vec3( tColor ), 1.0 );
 
     gl_Position = projectionMatrix * modelViewMatrix * vec4( texelPosition , 1.0 );

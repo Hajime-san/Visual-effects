@@ -93,17 +93,24 @@ const init = async () => {
 
     const model = await loadGLTF('./assets/model/RubberToy.glb');
 
+    const model2 = await loadGLTF('./assets/model/RubberToy.glb');
+
     mesh = model.scenes[0].children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
     let map = null;
+
+    let map2 = null;
 
     model.parser.associations.forEach((value, key) => {
         if (value.type === 'textures' && value.index === 0) {
             map = key;
         }
+        if (value.type === 'textures' && value.index === 1) {
+            map2 = key;
+        }
     });
 
-    const indicesLength = positionMap.image.width;
+    const indicesLength = positionMap.image.width - 1;
 
     uniforms = {
         positionMap: {
@@ -112,16 +119,19 @@ const init = async () => {
         map: {
             value: map,
         },
+        map2: {
+            value: map2,
+        },
         time: {
             value: 0.0,
         },
         // set bounding box for correct scale
         boudingBoxMax: {
-            value: VATdata.posMax * 0.01,
+            value: VATdata.posMax,
         },
         // set bounding box for correct scale
         boundingBoxMin: {
-            value: VATdata.posMin * 0.01,
+            value: VATdata.posMin,
         },
         indicesLength: {
             value: indicesLength,
@@ -144,8 +154,13 @@ const init = async () => {
     });
 
     mesh.position.set(0, 10, 0);
-    mesh.scale.set(10, 10, 10);
+    mesh.scale.set(2, 2, 2);
     scene.add(mesh);
+
+    const mesh2 = model2.scenes[0].children[0];
+    mesh2.position.set(20, 10, 0);
+    mesh2.scale.set(10, 10, 10);
+    scene.add(mesh2);
 };
 
 const animate = () => {
