@@ -30,7 +30,7 @@ type resolveTexture = (value?: THREE.Texture) => void;
 const loadEXRtexture = async (url: string) => {
     const loader = new EXRLoader();
     return new Promise((resolve: resolveTexture, reject) => {
-        loader.setDataType(THREE.HalfFloatType).load(url, texture => {
+        loader.setDataType(THREE.UnsignedByteType).load(url, texture => {
             resolve(texture);
         });
     });
@@ -95,6 +95,8 @@ const init = async () => {
 
     const model2 = await loadGLTF('./assets/model/RubberToy.glb');
 
+    // console.log(model2.scenes[0].children[0]);
+
     mesh = model.scenes[0].children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
     let map = null;
@@ -110,7 +112,7 @@ const init = async () => {
         }
     });
 
-    const indicesLength = positionMap.image.width - 1;
+    const indicesLength = positionMap.image.width;
 
     uniforms = {
         positionMap: {
@@ -154,7 +156,7 @@ const init = async () => {
     });
 
     mesh.position.set(0, 10, 0);
-    mesh.scale.set(2, 2, 2);
+    mesh.scale.set(10, 10, 10);
     scene.add(mesh);
 
     const mesh2 = model2.scenes[0].children[0];

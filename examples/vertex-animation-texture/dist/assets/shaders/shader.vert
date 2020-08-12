@@ -12,6 +12,7 @@ uniform float totalFrame;
 uniform sampler2D positionMap;
 uniform sampler2D map;
 
+
 void main() {
     vUv = uv;
     float frag = 1.0 / indicesLength;
@@ -22,7 +23,9 @@ void main() {
     vec3 texelPosition = texture2D( positionMap , vec2( pu , pv ) ).rgb * range + boundingBoxMin;
 
     vec3 tColor = texture2D( map, uv ).rgb;
-    vColor = vec4( vec3( tColor ), 1.0 );
+    vColor = vec4( tColor, 1.0 );
 
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( texelPosition , 1.0 );
+    vec4 outPosition = vec4( texelPosition , 1.0 );
+
+    gl_Position = projectionMatrix * modelViewMatrix * outPosition;
 }
