@@ -1,4 +1,3 @@
-#include <encodings_pars_fragment>
 varying vec2 vUv;
 varying vec4 vColor;
 

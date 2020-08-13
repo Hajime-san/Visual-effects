@@ -30,7 +30,13 @@ type resolveTexture = (value?: THREE.Texture) => void;
 const loadEXRtexture = async (url: string) => {
     const loader = new EXRLoader();
     return new Promise((resolve: resolveTexture, reject) => {
-        loader.setDataType(THREE.UnsignedByteType).load(url, texture => {
+        loader.setDataType(THREE.HalfFloatType).load(url, texture => {
+            texture.encoding = THREE.LinearEncoding;
+            texture.format = THREE.RGBAFormat;
+            texture.minFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.NearestFilter;
+            texture.generateMipmaps = false;
+
             resolve(texture);
         });
     });
