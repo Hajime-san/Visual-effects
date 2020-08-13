@@ -39,7 +39,6 @@ const init = async () => {
     camera.position.set(0, 30, 70);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.capabilities.floatFragmentTextures = true;
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);
@@ -99,7 +98,7 @@ const init = async () => {
         }
     });
 
-    const indicesLength = positionMap.image.width;
+    const indicesLength = positionMap.image.width - 1;
 
     uniforms = {
         positionMap: {
@@ -139,7 +138,6 @@ const init = async () => {
         vertexShader: shaderData.vertex,
         fragmentShader: shaderData.fragment,
         depthTest: true,
-        transparent: true,
     });
 
     mesh.position.set(20, 10, 0);
