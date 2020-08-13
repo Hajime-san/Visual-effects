@@ -1,8 +1,7 @@
 import * as THREE from 'three';
-import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { loadShaders, ShaderData, onWindowResize, loadTexture, loadGLTF } from '../../../modules/Util';
+import { loadShaders, ShaderData, onWindowResize, loadGLTF, loadEXRtexture } from '../../../modules/Util';
 
 import data from '../../dist/assets/model/RubberToy.json';
 
@@ -25,23 +24,6 @@ class GuiUniforms {
     }
 }
 
-type resolveTexture = (value?: THREE.Texture) => void;
-
-const loadEXRtexture = async (url: string) => {
-    const loader = new EXRLoader();
-    return new Promise((resolve: resolveTexture, reject) => {
-        loader.setDataType(THREE.HalfFloatType).load(url, texture => {
-            texture.encoding = THREE.LinearEncoding;
-            texture.format = THREE.RGBAFormat;
-            texture.minFilter = THREE.LinearFilter;
-            texture.magFilter = THREE.NearestFilter;
-            texture.generateMipmaps = false;
-
-            resolve(texture);
-        });
-    });
-};
-
 const init = async () => {
     // dat GUI
     const parameters = new GuiUniforms(VATdata.numOfFrames);
@@ -57,6 +39,7 @@ const init = async () => {
     camera.position.set(0, 30, 70);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.capabilities.floatFragmentTextures = true;
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);

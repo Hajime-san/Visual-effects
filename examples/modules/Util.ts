@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader';
 
 // text sprite
 export const labelMaterial = (text: string) => {
@@ -66,6 +67,21 @@ export const loadTexture = async (url: string) => {
     const loader = new THREE.TextureLoader();
     return new Promise((resolve: resolveTexture, reject) => {
         loader.load(url, texture => {
+            resolve(texture);
+        });
+    });
+};
+
+export const loadEXRtexture = async (url: string) => {
+    const loader = new EXRLoader();
+    return new Promise((resolve: resolveTexture, reject) => {
+        loader.setDataType(THREE.HalfFloatType).load(url, texture => {
+            texture.encoding = THREE.LinearEncoding;
+            texture.format = THREE.RGBAFormat;
+            texture.minFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.NearestFilter;
+            texture.generateMipmaps = false;
+
             resolve(texture);
         });
     });
