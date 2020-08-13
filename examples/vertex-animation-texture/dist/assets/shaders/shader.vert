@@ -33,6 +33,6 @@ void main() {
 
     vUv = uv;
     vNormal = normalMatrix * normal;
-    vec4 mvPosition = modelViewMatrix * vec4( outPosition.xyz , 1.0 );
+    vec4 mvPosition = modelViewMatrix * outPosition;
     vViewPosition = - mvPosition.xyz;
 }
