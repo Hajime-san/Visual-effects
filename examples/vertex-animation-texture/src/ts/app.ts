@@ -85,16 +85,16 @@ const init = async () => {
 
     mesh = model.scenes[0].children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
-    let map = null;
+    let colorMap: THREE.Texture;
 
-    let map2 = null;
+    let normalMap: THREE.Texture;
 
-    model.parser.associations.forEach((value, key) => {
+    model.parser.associations.forEach((value, key: THREE.Texture) => {
         if (value.type === 'textures' && value.index === 0) {
-            map = key;
+            colorMap = key;
         }
         if (value.type === 'textures' && value.index === 1) {
-            map2 = key;
+            normalMap = key;
         }
     });
 
@@ -104,11 +104,8 @@ const init = async () => {
         positionMap: {
             value: positionMap,
         },
-        map: {
-            value: map,
-        },
-        map2: {
-            value: map2,
+        colorMap: {
+            value: colorMap,
         },
         time: {
             value: 0.0,
@@ -131,6 +128,9 @@ const init = async () => {
         currentFrame: {
             value: 0,
         },
+
+        // lights
+        ...THREE.UniformsLib.lights,
     };
 
     mesh.material = new THREE.ShaderMaterial({
@@ -138,6 +138,10 @@ const init = async () => {
         vertexShader: shaderData.vertex,
         fragmentShader: shaderData.fragment,
         depthTest: true,
+        lights: true,
+        extensions: {
+            derivatives: true,
+        },
     });
 
     mesh.position.set(20, 10, 0);

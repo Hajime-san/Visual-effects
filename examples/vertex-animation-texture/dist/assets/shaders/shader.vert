@@ -1,5 +1,6 @@
 varying vec2 vUv;
-varying vec4 vColor;
+varying vec3 vViewPosition;
+varying vec3 vNormal;
 
 attribute float _id;
 uniform float time;
@@ -9,8 +10,6 @@ uniform float indicesLength;
 uniform float currentFrame;
 uniform float totalFrame;
 uniform sampler2D positionMap;
-uniform sampler2D map;
-
 
 void main() {
     vUv = uv;
@@ -21,10 +20,11 @@ void main() {
 
     vec3 texelPosition = texture2D( positionMap , vec2( pu , pv ) ).rgb * range + boundingBoxMin;
 
-    vec3 tColor = texture2D( map, uv ).rgb;
-    vColor = vec4( tColor, 1.0 );
-
     vec4 outPosition = vec4( texelPosition , 1.0 );
+
+    vNormal = normalMatrix * normal;
+    vec4 mvPosition = modelViewMatrix * vec4(outPosition.xyz, 1.0);
+    vViewPosition = - mvPosition.xyz;
 
     gl_Position = projectionMatrix * modelViewMatrix * outPosition;
 }
