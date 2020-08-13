@@ -81,8 +81,6 @@ const init = async () => {
 
     const model = await loadGLTF('./assets/model/RubberToy.glb');
 
-    const model2 = await loadGLTF('./assets/model/RubberToy.glb');
-
     mesh = model.scenes[0].children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
     let colorMap: THREE.Texture;
@@ -98,7 +96,7 @@ const init = async () => {
         }
     });
 
-    const indicesLength = positionMap.image.width - 1;
+    const indicesLength = positionMap.image.width;
 
     uniforms = {
         positionMap: {
@@ -147,6 +145,8 @@ const init = async () => {
     mesh.position.set(20, 10, 0);
     mesh.scale.set(10, 10, 10);
     scene.add(mesh);
+
+    const model2 = await loadGLTF('./assets/model/RubberToy.glb');
 
     const mesh2 = model2.scenes[0].children[0];
     mesh2.position.set(-20, 10, 0);
