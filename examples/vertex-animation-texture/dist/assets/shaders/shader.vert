@@ -24,7 +24,7 @@ vec3 getTexelPosition(sampler2D map, vec2 uv, float range, float boxMin) {
 
 void main() {
     float pu = fract( frag * _id + texShift );
-    float pv = fract( currentFrame / totalFrame ) + texShift;
+    float pv = 1.0 - fract( currentFrame / totalFrame ) + texShift;
     vec2 shiftUv = vec2( pu, pv );
 
     vec4 outPosition = vec4( getTexelPosition( positionMap, shiftUv, range, boundingBoxMin ) , 1.0 );
