@@ -72,7 +72,7 @@ export const loadTexture = async (url: string) => {
     });
 };
 
-export const loadEXRtexture = async (url: string) => {
+export const loadVATexrTexture = async (url: string) => {
     const loader = new EXRLoader();
     return new Promise((resolve: resolveTexture, reject) => {
         loader.setDataType(THREE.HalfFloatType).load(url, texture => {

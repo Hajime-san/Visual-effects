@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { loadShaders, ShaderData, onWindowResize, loadGLTF, loadEXRtexture } from '../../../modules/Util';
+import { loadShaders, ShaderData, onWindowResize, loadGLTF, loadVATexrTexture, loadTexture } from '../../../modules/Util';
 
 import data from '../../dist/assets/model/RubberToy.json';
 
@@ -71,7 +71,11 @@ const init = async () => {
     const light = new THREE.AmbientLight(0xffffff, 1.0);
     scene.add(light);
 
-    const positionMap = await loadEXRtexture('./assets/images/RubberToy.exr');
+    const positionMap = await loadVATexrTexture('./assets/images/RubberToy.exr');
+
+    // 8-bit png converted from exr
+    const normalMap = await loadTexture('./assets/images/RubberToy_normal.png');
+    normalMap.encoding = THREE.LinearEncoding;
 
     // set shader
     shaderData = await loadShaders([
@@ -85,14 +89,9 @@ const init = async () => {
 
     let colorMap: THREE.Texture;
 
-    let normalMap: THREE.Texture;
-
     model.parser.associations.forEach((value, key: THREE.Texture) => {
         if (value.type === 'textures' && value.index === 0) {
             colorMap = key;
-        }
-        if (value.type === 'textures' && value.index === 1) {
-            normalMap = key;
         }
     });
 
@@ -101,6 +100,9 @@ const init = async () => {
     uniforms = {
         positionMap: {
             value: positionMap,
+        },
+        normalMap: {
+            value: normalMap,
         },
         colorMap: {
             value: colorMap,
