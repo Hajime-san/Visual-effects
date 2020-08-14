@@ -55,7 +55,7 @@ void main() {
         vNormal = normalMatrix * texelNormalPosition.rgb;
 
     #else
-
+        // Quality isn't high enough
         vNormal = normalMatrix * VAT_UnpackAlpha( texelPosition.a );
 
     #endif
