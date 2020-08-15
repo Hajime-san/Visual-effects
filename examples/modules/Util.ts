@@ -76,10 +76,11 @@ export const loadVATexrTexture = async (url: string) => {
     const loader = new EXRLoader();
     return new Promise((resolve: resolveTexture, reject) => {
         loader.setDataType(THREE.HalfFloatType).load(url, texture => {
+            // texture as float value
             texture.encoding = THREE.LinearEncoding;
-            texture.format = THREE.RGBAFormat;
-            texture.minFilter = THREE.LinearFilter;
+            // get correct float value
             texture.magFilter = THREE.NearestFilter;
+            // disable mipmap
             texture.generateMipmaps = false;
 
             resolve(texture);

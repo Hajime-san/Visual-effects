@@ -76,6 +76,8 @@ const init = async () => {
     // 8-bit png converted from exr
     const normalMap = await loadTexture('./assets/images/RubberToy_normal.png');
     normalMap.encoding = THREE.LinearEncoding;
+    normalMap.minFilter = THREE.LinearFilter;
+    normalMap.magFilter = THREE.NearestFilter;
 
     // set shader
     shaderData = await loadShaders([
