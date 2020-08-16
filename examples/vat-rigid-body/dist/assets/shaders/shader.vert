@@ -12,20 +12,18 @@ uniform float indicesLength;
 uniform float currentFrame;
 uniform float totalFrame;
 uniform sampler2D positionMap;
+uniform sampler2D rotationMap;
 uniform sampler2D normalMap;
 
 float frag = 1.0 / indicesLength;
 float range = boudingBoxMax + ( boundingBoxMin * - 1.0 );
 float texShift = 0.5 * frag;
 
-vec4 getTexelPosition(sampler2D map, vec2 uv, float range, float boxMin) {
-    vec4 pos = texture2D( map , uv );
-    pos *= range;
-    pos += boxMin;
-    return pos;
+vec3 VAT_RotateVector(vec3 v, vec4 q) {
+    return v + cross(2.0 * q.xyz, cross(q.xyz, v) + q.w * v);
 }
 
-vec3 VAT_UnpackAlpha(float a) {
+vec3 unpackAlpha(float a) {
     float a_hi = floor( a * 32.0 );
     float a_lo = a * 32.0 * 32.0 - a_hi * 32.0;
 
@@ -59,7 +57,7 @@ void main() {
 
     #else
         // Quality isn't high enough
-        vNormal = normalMatrix * VAT_UnpackAlpha( texelPosition.a );
+        vNormal = normalMatrix * unpackAlpha( texelPosition.a );
 
     #endif
 }
