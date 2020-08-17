@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import * as dat from 'dat.gui';
 import { loadShaders, ShaderData, onWindowResize, loadGLTF, loadVATexrTexture, loadTexture } from '../../../modules/Util';
 
-import data from '../../dist/assets/model/data.json';
+import data from '../../dist/assets/model/RubberToy_data.json';
 
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
@@ -71,9 +72,13 @@ const init = async () => {
     const light = new THREE.AmbientLight(0xffffff, 1.0);
     scene.add(light);
 
-    const positionMap = await loadVATexrTexture('./assets/images/position.exr');
+    const positionMap = await loadVATexrTexture('./assets/images/RubberToy_position.exr');
 
-    const rotationMap = await loadVATexrTexture('./assets/images/rotation.exr');
+    const rotationMap = await loadVATexrTexture('./assets/images/RubberToy_rotation.exr');
+
+    // const fbx = new FBXLoader().load('./assets/model/vertex_animation_textures1_mesh.fbx', obj => {
+    //     console.log(obj.children[0]);
+    // });
 
     // 8-bit png converted from exr
     // const normalMap = await loadTexture('./assets/images/RubberToy_normal.png');
@@ -87,11 +92,17 @@ const init = async () => {
         { key: 'fragment', path: './assets/shaders/shader.frag' },
     ]);
 
-    const model = await loadGLTF('./assets/model/sphere.glb');
+    const model = await loadGLTF('./assets/model/RubberToy.glb');
 
     mesh = model.scenes[0].children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
     console.log(mesh);
+
+    // const model2 = await loadGLTF('./assets/model/output.glb');
+
+    // const mesh2 = model2.scenes[0].children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
+
+    // console.log(mesh2);
 
     // let colorMap: THREE.Texture;
 
@@ -126,6 +137,12 @@ const init = async () => {
         // set bounding box for correct scale
         boundingBoxMin: {
             value: VATdata.posMin,
+        },
+        pivotMax: {
+            value: VATdata.pivMax,
+        },
+        pivotMin: {
+            value: VATdata.pivMin,
         },
         indicesLength: {
             value: indicesLength,

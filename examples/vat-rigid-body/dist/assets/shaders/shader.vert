@@ -5,9 +5,13 @@ varying vec3 vViewPosition;
 varying vec3 vNormal;
 
 attribute float _id;
+attribute vec3 _rest;
+
 uniform float time;
 uniform float boudingBoxMax;
 uniform float boundingBoxMin;
+uniform float pivotMax;
+uniform float pivotMin;
 uniform float indicesLength;
 uniform float currentFrame;
 uniform float totalFrame;
@@ -34,6 +38,9 @@ vec3 unpackAlpha(float a) {
 }
 
 void main() {
+    vec3 restorePivot = pivotMax * _rest - pivotMin;
+    vec3 pivot = _rest;
+
     float pu = fract( frag * _id + texShift );
     float pv = 1.0 - fract( currentFrame / totalFrame ) + texShift;
     vec2 shiftUv = vec2( pu, pv );
@@ -42,9 +49,13 @@ void main() {
     texelPosition *= range;
     texelPosition += boundingBoxMin;
 
-    vec4 outPosition = vec4( texelPosition.rgb , 1.0 );
+    vec4 rotationPosition = texture2D( rotationMap, shiftUv );
 
-    gl_Position = projectionMatrix * modelViewMatrix * outPosition;
+    vec4 rot = (rotationPosition * 2.0 - 1.0) * vec4(-1.0, 1.0, 1.0, 1.0);
+
+    vec3 outPosition = VAT_RotateVector(position - pivot, rot) + pivot + texelPosition.rgb;
+
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( outPosition, 1.0 );
 
     vUv = uv;
     vec4 mvPosition = modelViewMatrix * vec4( outPosition.xyz, 1.0 );
