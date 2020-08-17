@@ -1,8 +1,7 @@
-#define USE_NORMAL_MAP_VECTOR
-
 varying vec2 vUv;
 varying vec3 vViewPosition;
 varying vec3 vNormal;
+varying vec3 vColor;
 
 attribute float _id;
 attribute vec3 _rest;
@@ -17,14 +16,30 @@ uniform float currentFrame;
 uniform float totalFrame;
 uniform sampler2D positionMap;
 uniform sampler2D rotationMap;
-uniform sampler2D normalMap;
 
 float frag = 1.0 / indicesLength;
 float range = boudingBoxMax + ( boundingBoxMin * - 1.0 );
+float pivotRange = pivotMax + ( pivotMin * - 1.0 );
 float texShift = 0.5 * frag;
 
 vec3 VAT_RotateVector(vec3 v, vec4 q) {
     return v + cross(2.0 * q.xyz, cross(q.xyz, v) + q.w * v);
+}
+
+vec3 DecodePositionInBounds(vec3 encodedPosition, vec3 boundsCenter, vec3 boundsExtents)
+{
+    return boundsCenter + vec3(mix(-boundsExtents.x, boundsExtents.x, encodedPosition.x), mix(-boundsExtents.y, boundsExtents.y, encodedPosition.y), mix(-boundsExtents.z, boundsExtents.z, encodedPosition.z));
+}
+
+vec4 DecodeQuaternion(vec4 encodedRotation)
+{
+    return vec4(mix( vec4(-1.0), vec4(1.0), encodedRotation));
+}
+
+vec3 RotateVectorUsingQuaternionFast(vec4 q, vec3 v)
+{
+    vec3 t = 2.0 * cross(q.xyz, v);
+    return v + q.w * t + cross(q.xyz, t);
 }
 
 vec3 unpackAlpha(float a) {
@@ -38,22 +53,27 @@ vec3 unpackAlpha(float a) {
 }
 
 void main() {
-    vec3 restorePivot = pivotMax * _rest - pivotMin;
+    // vec3 restorePivot = pivotMax * _rest - pivotMin;
     vec3 pivot = _rest;
+    pivot *= pivotRange;
+    pivot += pivotMin;
 
     float pu = fract( frag * _id + texShift );
     float pv = 1.0 - fract( currentFrame / totalFrame ) + texShift;
     vec2 shiftUv = vec2( pu, pv );
 
     vec4 texelPosition = texture2D( positionMap, shiftUv );
-    texelPosition *= range;
-    texelPosition += boundingBoxMin;
+    // texelPosition *= range;
+    // texelPosition += boundingBoxMin;
 
     vec4 rotationPosition = texture2D( rotationMap, shiftUv );
 
-    vec4 rot = (rotationPosition * 2.0 - 1.0) * vec4(-1.0, 1.0, 1.0, 1.0);
+    vec4 rot = DecodeQuaternion( rotationPosition );
 
-    vec3 outPosition = VAT_RotateVector(position - pivot, rot) + pivot + texelPosition.rgb;
+    vec3 offset = position - pivot;
+    vec3 rotated = RotateVectorUsingQuaternionFast(rot, offset);
+
+    vec3 outPosition = pivot + texelPosition.rgb;
 
     gl_Position = projectionMatrix * modelViewMatrix * vec4( outPosition, 1.0 );
 
@@ -61,14 +81,7 @@ void main() {
     vec4 mvPosition = modelViewMatrix * vec4( outPosition.xyz, 1.0 );
     vViewPosition = - mvPosition.xyz;
 
-    #ifdef USE_NORMAL_MAP_VECTOR
+    vColor = _rest;
 
-        vec4 texelNormalPosition = texture2D( normalMap, shiftUv );
-        vNormal = normalMatrix * texelNormalPosition.rgb;
-
-    #else
-        // Quality isn't high enough
-        vNormal = normalMatrix * unpackAlpha( texelPosition.a );
-
-    #endif
+    vNormal = normalMatrix * RotateVectorUsingQuaternionFast(rotationPosition, normal);
 }

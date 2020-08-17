@@ -76,6 +76,7 @@ const init = async () => {
 
     const rotationMap = await loadVATexrTexture('./assets/images/RubberToy_rotation.exr');
 
+    // sample
     // const fbx = new FBXLoader().load('./assets/model/vertex_animation_textures1_mesh.fbx', obj => {
     //     console.log(obj.children[0]);
     // });
@@ -121,9 +122,6 @@ const init = async () => {
         rotationMap: {
             value: rotationMap,
         },
-        // normalMap: {
-        //     value: normalMap,
-        // },
         // colorMap: {
         //     value: colorMap,
         // },
@@ -170,7 +168,7 @@ const init = async () => {
         },
     });
 
-    mesh.position.set(0, 10, 0);
+    mesh.position.set(0, 0, 0);
     mesh.scale.set(10, 10, 10);
     scene.add(mesh);
 };
