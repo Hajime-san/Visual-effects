@@ -34,10 +34,10 @@ void main() {
     vec2 shiftUv = vec2( pu, pv );
 
     vec4 texelPosition = texture2D( positionMap, shiftUv );
-    texelPosition *= boundingBoxRange;
+    texelPosition *= range;
     texelPosition += boundingBoxMin;
 
-    vec4 outPosition = vec4( texelPosition.xyz , 1.0 );
+    vec4 outPosition = vec4( texelPosition.rgb , 1.0 );
 
     gl_Position = projectionMatrix * modelViewMatrix * outPosition;
 
@@ -48,9 +48,7 @@ void main() {
     #ifdef USE_NORMAL_MAP_VECTOR
 
         vec4 texelNormalPosition = texture2D( normalMap, shiftUv );
-        texelNormalPosition *= boundingBoxRange;
-        texelNormalPosition += boundingBoxMin;
-        vNormal = normalMatrix * texelNormalPosition.xyz;
+        vNormal = normalMatrix * texelNormalPosition.rgb;
 
     #else
         // Quality isn't high enough(work in progress)
