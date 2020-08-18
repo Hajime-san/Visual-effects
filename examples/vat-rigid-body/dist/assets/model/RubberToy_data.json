@@ -1,0 +1,24 @@
+[
+    {
+        "Name": "Soft", 
+        "doubleTex": 0, 
+        "height": 0.1, 
+        "normData": 1, 
+        "numOfFrames": 299, 
+        "packNorm": 1, 
+        "packPscale": 1, 
+        "padPowTwo": 0, 
+        "paddedSizeX": 0, 
+        "paddedSizeY": 0, 
+        "pivMax": 4.27732, 
+        "pivMin": -0.80177, 
+        "posMax": 4.50407, 
+        "posMin": -5.75797, 
+        "scaleMax": 0.0, 
+        "scaleMin": 0.0, 
+        "speed": 0.200668896321, 
+        "textureSizeX": 0, 
+        "textureSizeY": 0, 
+        "width": 0.1
+    }
+]
