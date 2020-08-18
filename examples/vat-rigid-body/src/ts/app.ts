@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import * as dat from 'dat.gui';
 import { loadShaders, ShaderData, onWindowResize, loadGLTF, loadVATexrTexture, loadTexture } from '../../../modules/Util';
 
@@ -72,21 +71,6 @@ const init = async () => {
     const light = new THREE.AmbientLight(0xffffff, 1.0);
     scene.add(light);
 
-    const positionMap = await loadVATexrTexture('./assets/images/RubberToy_position.exr');
-
-    const rotationMap = await loadVATexrTexture('./assets/images/RubberToy_rotation.exr');
-
-    // sample
-    // const fbx = new FBXLoader().load('./assets/model/vertex_animation_textures1_mesh.fbx', obj => {
-    //     console.log(obj.children[0]);
-    // });
-
-    // 8-bit png converted from exr
-    // const normalMap = await loadTexture('./assets/images/RubberToy_normal.png');
-    // normalMap.encoding = THREE.LinearEncoding;
-    // normalMap.minFilter = THREE.LinearFilter;
-    // normalMap.magFilter = THREE.NearestFilter;
-
     // set shader
     shaderData = await loadShaders([
         { key: 'vertex', path: './assets/shaders/shader.vert' },
@@ -99,15 +83,19 @@ const init = async () => {
 
     console.log(mesh);
 
-    // let colorMap: THREE.Texture;
+    let colorMap: THREE.Texture;
 
-    // model.parser.associations.forEach((value, key: THREE.Texture) => {
-    //     if (value.type === 'textures' && value.index === 0) {
-    //         colorMap = key;
-    //     }
-    // });
+    model.parser.associations.forEach((value, key: THREE.Texture) => {
+        if (value.type === 'textures' && value.index === 0) {
+            colorMap = key;
+        }
+    });
 
-    const indicesLength = positionMap.image.width;
+    const positionMap = await loadVATexrTexture('./assets/images/RubberToy_position.exr');
+
+    const rotationMap = await loadVATexrTexture('./assets/images/RubberToy_rotation.exr');
+
+    const fragmentPieces = positionMap.image.width;
 
     uniforms = {
         positionMap: {
@@ -116,9 +104,9 @@ const init = async () => {
         rotationMap: {
             value: rotationMap,
         },
-        // colorMap: {
-        //     value: colorMap,
-        // },
+        colorMap: {
+            value: colorMap,
+        },
         time: {
             value: 0.0,
         },
@@ -136,8 +124,9 @@ const init = async () => {
         pivotMin: {
             value: VATdata.pivMin,
         },
-        indicesLength: {
-            value: indicesLength,
+        // texture width
+        fragmentPieces: {
+            value: fragmentPieces,
         },
         // total animation frame
         totalFrame: {

@@ -41,15 +41,15 @@ varying vec3 vViewPosition;
 
 varying vec2 vUv;
 varying vec3 vColor;
-// uniform sampler2D colorMap;
+uniform sampler2D colorMap;
 
 
 void main() {
 
-    // vec4 baseColor = texture2D( colorMap, vUv );
+    vec4 baseColor = texture2D( colorMap, vUv );
 
     #include <clipping_planes_fragment>
-	vec4 diffuseColor = vec4( vColor , opacity );
+	vec4 diffuseColor = vec4( baseColor.rgb , opacity );
 	ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
 	vec3 totalEmissiveRadiance = vec3( -0.5 );
 	#include <logdepthbuf_fragment>
