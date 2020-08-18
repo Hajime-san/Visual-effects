@@ -4,6 +4,7 @@ varying vec3 vNormal;
 varying vec3 vColor;
 
 attribute float _id;
+attribute vec2 uv2;
 attribute vec3 color;
 
 uniform float time;
@@ -22,22 +23,11 @@ float range = boudingBoxMax + ( boundingBoxMin * - 1.0 );
 float pivotRange = pivotMax + ( pivotMin * - 1.0 );
 float texShift = 0.5 * frag;
 
-vec3 VAT_RotateVector(vec3 v, vec4 q) {
-    return v + cross(2.0 * q.xyz, cross(q.xyz, v) + q.w * v);
-}
-
-vec3 DecodePositionInBounds(vec3 encodedPosition, vec3 boundsCenter, vec3 boundsExtents)
-{
-    return boundsCenter + vec3(mix(-boundsExtents.x, boundsExtents.x, encodedPosition.x), mix(-boundsExtents.y, boundsExtents.y, encodedPosition.y), mix(-boundsExtents.z, boundsExtents.z, encodedPosition.z));
-}
-
-vec4 DecodeQuaternion(vec4 encodedRotation)
-{
+vec4 DecodeQuaternion(vec4 encodedRotation) {
     return vec4(mix( vec4(-1.0), vec4(1.0), encodedRotation));
 }
 
-vec3 RotateVectorUsingQuaternionFast(vec4 q, vec3 v)
-{
+vec3 RotateVectorUsingQuaternionFast(vec4 q, vec3 v) {
     vec3 t = 2.0 * cross(q.xyz, v);
     return v + q.w * t + cross(q.xyz, t);
 }
@@ -53,7 +43,7 @@ vec3 unpackAlpha(float a) {
 }
 
 void main() {
-    float pu = fract( frag * _id + texShift );
+    float pu = uv2.x;
     float pv = 1.0 - fract( currentFrame / totalFrame ) + texShift;
     vec2 shiftUv = vec2( pu, pv );
 
@@ -71,9 +61,9 @@ void main() {
     vec3 offset = position - pivot;
     vec3 rotated = RotateVectorUsingQuaternionFast( rotation, offset );
 
-    vec3 outPosition = rotated + pivot + texelPosition.rgb;
+    vec3 outPosition = rotated + texelPosition.rgb;
 
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( outPosition, 1.0 );
 
     vUv = uv;
     vec4 mvPosition = modelViewMatrix * vec4( outPosition, 1.0 );
