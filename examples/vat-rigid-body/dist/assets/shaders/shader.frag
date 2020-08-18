@@ -49,7 +49,7 @@ void main() {
     // vec4 baseColor = texture2D( colorMap, vUv );
 
     #include <clipping_planes_fragment>
-	vec4 diffuseColor = vec4( vColor * 0.3, opacity );
+	vec4 diffuseColor = vec4( vColor , opacity );
 	ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
 	vec3 totalEmissiveRadiance = vec3( -0.5 );
 	#include <logdepthbuf_fragment>

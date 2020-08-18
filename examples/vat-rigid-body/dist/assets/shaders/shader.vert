@@ -4,7 +4,7 @@ varying vec3 vNormal;
 varying vec3 vColor;
 
 attribute float _id;
-attribute vec3 _rest;
+attribute vec3 color;
 
 uniform float time;
 uniform float boudingBoxMax;
@@ -53,35 +53,33 @@ vec3 unpackAlpha(float a) {
 }
 
 void main() {
-    // vec3 restorePivot = pivotMax * _rest - pivotMin;
-    vec3 pivot = _rest;
-    pivot *= pivotRange;
-    pivot += pivotMin;
-
     float pu = fract( frag * _id + texShift );
     float pv = 1.0 - fract( currentFrame / totalFrame ) + texShift;
     vec2 shiftUv = vec2( pu, pv );
 
     vec4 texelPosition = texture2D( positionMap, shiftUv );
-    // texelPosition *= range;
-    // texelPosition += boundingBoxMin;
+    texelPosition *= range;
+    texelPosition += boundingBoxMin;
 
     vec4 rotationPosition = texture2D( rotationMap, shiftUv );
+    vec4 rotation = DecodeQuaternion( rotationPosition );
 
-    vec4 rot = DecodeQuaternion( rotationPosition );
+    vec3 pivot = color;
+    pivot *= pivotRange;
+    pivot += pivotMin;
 
     vec3 offset = position - pivot;
-    vec3 rotated = RotateVectorUsingQuaternionFast(rot, offset);
+    vec3 rotated = RotateVectorUsingQuaternionFast( rotation, offset );
 
-    vec3 outPosition = pivot + texelPosition.rgb;
+    vec3 outPosition = rotated + pivot + texelPosition.rgb;
 
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( outPosition, 1.0 );
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 
     vUv = uv;
-    vec4 mvPosition = modelViewMatrix * vec4( outPosition.xyz, 1.0 );
+    vec4 mvPosition = modelViewMatrix * vec4( outPosition, 1.0 );
     vViewPosition = - mvPosition.xyz;
 
-    vColor = _rest;
+    vColor = color;
 
-    vNormal = normalMatrix * RotateVectorUsingQuaternionFast(rotationPosition, normal);
+    vNormal = normalMatrix * RotateVectorUsingQuaternionFast( rotation, normal );
 }

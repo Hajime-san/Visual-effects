@@ -99,12 +99,6 @@ const init = async () => {
 
     console.log(mesh);
 
-    // const model2 = await loadGLTF('./assets/model/output.glb');
-
-    // const mesh2 = model2.scenes[0].children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
-
-    // console.log(mesh2);
-
     // let colorMap: THREE.Texture;
 
     // model.parser.associations.forEach((value, key: THREE.Texture) => {
