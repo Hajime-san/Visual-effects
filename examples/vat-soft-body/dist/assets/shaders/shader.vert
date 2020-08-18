@@ -15,15 +15,8 @@ uniform sampler2D positionMap;
 uniform sampler2D normalMap;
 
 float frag = 1.0 / indicesLength;
-float range = boudingBoxMax + ( boundingBoxMin * - 1.0 );
+float boundingBoxRange = boudingBoxMax + ( boundingBoxMin * - 1.0 );
 float texShift = 0.5 * frag;
-
-vec4 getTexelPosition(sampler2D map, vec2 uv, float range, float boxMin) {
-    vec4 pos = texture2D( map , uv );
-    pos *= range;
-    pos += boxMin;
-    return pos;
-}
 
 vec3 VAT_UnpackAlpha(float a) {
     float a_hi = floor( a * 32.0 );
@@ -41,10 +34,10 @@ void main() {
     vec2 shiftUv = vec2( pu, pv );
 
     vec4 texelPosition = texture2D( positionMap, shiftUv );
-    texelPosition *= range;
+    texelPosition *= boundingBoxRange;
     texelPosition += boundingBoxMin;
 
-    vec4 outPosition = vec4( texelPosition.rgb , 1.0 );
+    vec4 outPosition = vec4( texelPosition.xyz , 1.0 );
 
     gl_Position = projectionMatrix * modelViewMatrix * outPosition;
 
@@ -55,11 +48,14 @@ void main() {
     #ifdef USE_NORMAL_MAP_VECTOR
 
         vec4 texelNormalPosition = texture2D( normalMap, shiftUv );
-        vNormal = normalMatrix * texelNormalPosition.rgb;
+        texelNormalPosition *= boundingBoxRange;
+        texelNormalPosition += boundingBoxMin;
+        vNormal = normalMatrix * texelNormalPosition.xyz;
 
     #else
-        // Quality isn't high enough
-        vNormal = normalMatrix * VAT_UnpackAlpha( texelPosition.a );
+        // Quality isn't high enough(work in progress)
+        vec3 decodedNormal = VAT_UnpackAlpha( texelPosition.a );
+        vNormal = normalMatrix * decodedNormal;
 
     #endif
 }
