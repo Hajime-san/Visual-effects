@@ -33,12 +33,20 @@ vec3 RotateVectorUsingQuaternionFast(vec4 q, vec3 v) {
 void main() {
     // group id of child meshes for sampling texture's ultra
     float pu = uv2.x;
-    float pv = 1.0 - fract( currentFrame / totalFrame ) + texShift;
+    float pv = 1.0 - fract( floor( currentFrame ) / totalFrame ) + texShift;
+    // float nextPv = 1.0 - fract( ceil( currentFrame ) / totalFrame ) + texShift;
     vec2 shiftUv = vec2( pu, pv );
+    // vec2 shiftNextUv = vec2( pu, nextPv );
 
     vec4 samplePosition = texture2D( positionMap, shiftUv );
     samplePosition *= boundingBoxRange;
     samplePosition += boundingBoxMin;
+
+    // vec4 sampleNextPosition = texture2D( positionMap, shiftNextUv );
+    // sampleNextPosition *= boundingBoxRange;
+    // sampleNextPosition += boundingBoxMin;
+
+    // vec4 lerpTwoFrame = mix( samplePosition, sampleNextPosition, fract( currentFrame ) );
 
     vec4 sampleRotation = texture2D( rotationMap, shiftUv );
     vec4 decodedRotation = DecodeQuaternion( sampleRotation );

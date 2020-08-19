@@ -35,7 +35,7 @@ const init = async () => {
 
     // intial settings
     const container = document.getElementById('canvas');
-    camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 2000);
+    camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 2000);
     camera.position.set(0, 30, 70);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
