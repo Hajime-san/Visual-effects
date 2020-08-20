@@ -74,10 +74,10 @@ const init = async () => {
     const positionMap = await loadVATexrTexture('./assets/images/RubberToy_position.exr');
 
     // 8-bit png converted from exr
-    // const normalMap = await loadTexture('./assets/images/RubberToy_normal.png');
-    // normalMap.encoding = THREE.LinearEncoding;
-    // normalMap.minFilter = THREE.LinearFilter;
-    // normalMap.magFilter = THREE.NearestFilter;
+    const normalMap = await loadTexture('./assets/images/RubberToy_normal.png');
+    normalMap.encoding = THREE.LinearEncoding;
+    normalMap.minFilter = THREE.LinearFilter;
+    normalMap.magFilter = THREE.NearestFilter;
 
     // set shader
     shaderData = await loadShaders([
@@ -91,15 +91,13 @@ const init = async () => {
 
     console.log(mesh);
 
-    // let colorMap: THREE.Texture;
+    let colorMap: THREE.Texture;
 
-    // model.parser.associations.forEach((value, key: THREE.Texture) => {
-    //     if (value.type === 'textures' && value.index === 0) {
-    //         colorMap = key;
-    //     }
-    // });
-
-    // console.log(colorMap);
+    model.parser.associations.forEach((value, key: THREE.Texture) => {
+        if (value.type === 'textures' && value.index === 0) {
+            colorMap = key;
+        }
+    });
 
     const indicesLength = positionMap.image.width;
 
@@ -107,12 +105,12 @@ const init = async () => {
         positionMap: {
             value: positionMap,
         },
-        // normalMap: {
-        //     value: normalMap,
-        // },
-        // colorMap: {
-        //     value: colorMap,
-        // },
+        normalMap: {
+            value: normalMap,
+        },
+        colorMap: {
+            value: colorMap,
+        },
         time: {
             value: 0.0,
         },
@@ -150,7 +148,7 @@ const init = async () => {
         },
     });
 
-    mesh.position.set(0, 0.3, 0);
+    mesh.position.set(0, 0.5, 0);
     mesh.scale.set(10, 10, 10);
     scene.add(mesh);
 };

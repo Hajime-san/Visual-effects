@@ -1,4 +1,4 @@
-// #define USE_NORMAL_MAP_VECTOR
+#define USE_NORMAL_MAP_VECTOR
 
 varying vec2 vUv;
 varying vec3 vViewPosition;
@@ -13,7 +13,7 @@ uniform float indicesLength;
 uniform float currentFrame;
 uniform float totalFrame;
 uniform sampler2D positionMap;
-// uniform sampler2D normalMap;
+uniform sampler2D normalMap;
 
 float frag = 1.0 / indicesLength;
 float boundingBoxRange = boudingBoxMax + ( boundingBoxMin * - 1.0 );

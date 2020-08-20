@@ -1,3 +1,4 @@
+// #define USE_PARAMETER_COLOR
 #define PHYSICAL
 uniform vec3 emissive;
 uniform float roughness;
@@ -40,15 +41,23 @@ varying vec3 vViewPosition;
 #include <clipping_planes_pars_fragment>
 
 varying vec2 vUv;
-// uniform sampler2D colorMap;
+uniform sampler2D colorMap;
 
 
 void main() {
 
-    // vec4 baseColor = texture2D( colorMap, vUv );
+	#ifdef USE_PARAMETER_COLOR
+
+        vec4 baseColor = vec4( vec3( 0.2, 0.4, 0.9 ), 1.0 );
+
+    #else
+
+		vec4 baseColor = texture2D( colorMap, vUv );
+
+    #endif
 
     #include <clipping_planes_fragment>
-	vec4 diffuseColor = vec4( vec3(0.8), opacity );
+	vec4 diffuseColor = vec4( baseColor.rgb, opacity );
 	ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
 	vec3 totalEmissiveRadiance = vec3( -0.5 );
 	#include <logdepthbuf_fragment>
