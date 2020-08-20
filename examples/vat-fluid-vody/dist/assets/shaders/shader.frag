@@ -1,4 +1,4 @@
-// #define USE_PARAMETER_COLOR
+#define USE_PARAMETER_COLOR
 #define PHYSICAL
 uniform vec3 emissive;
 uniform float roughness;
@@ -42,13 +42,20 @@ varying vec3 vViewPosition;
 
 varying vec2 vUv;
 uniform sampler2D colorMap;
+uniform vec3 dynamicBaseColor;
 
+vec3 colorConvert(vec3 c) {
+    c.r = c.r / 255.0;
+    c.g = c.g / 255.0;
+    c.b = c.b / 255.0;
+    return c;
+}
 
 void main() {
 
 	#ifdef USE_PARAMETER_COLOR
 
-        vec4 baseColor = vec4( vec3( 0.2, 0.4, 0.9 ), 1.0 );
+        vec4 baseColor = vec4( colorConvert( dynamicBaseColor ), 1.0 );
 
     #else
 

@@ -19,8 +19,11 @@ const VATdata = data[0];
 class GuiUniforms {
     totalFrame: number;
 
+    dynamicBaseColor: Array<number>;
+
     constructor(totalFrame: number) {
         this.totalFrame = totalFrame;
+        this.dynamicBaseColor = [20, 244, 0];
     }
 }
 
@@ -31,6 +34,9 @@ const init = async () => {
     gui.add(parameters, 'totalFrame', VATdata.numOfFrames * 0.5, VATdata.numOfFrames * 2).onChange(() => {
         uniforms.totalFrame.value = parameters.totalFrame;
         currentFrame = 0;
+    });
+    gui.addColor(parameters, 'dynamicBaseColor').onChange(() => {
+        uniforms.dynamicBaseColor.value = parameters.dynamicBaseColor;
     });
 
     // intial settings
@@ -89,8 +95,6 @@ const init = async () => {
 
     mesh = model.scenes[0].children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
-    console.log(mesh);
-
     let colorMap: THREE.Texture;
 
     model.parser.associations.forEach((value, key: THREE.Texture) => {
@@ -131,6 +135,9 @@ const init = async () => {
         },
         currentFrame: {
             value: 0,
+        },
+        dynamicBaseColor: {
+            value: parameters.dynamicBaseColor,
         },
 
         // lights
