@@ -30,15 +30,16 @@ vec3 VAT_UnpackAlpha(float a) {
 }
 
 void main() {
+    // group id of child meshes for sampling texture's ultra
     float pu = uv2.x;
     float pv = 1.0 - fract( currentFrame / totalFrame ) + texShift;
     vec2 shiftUv = vec2( pu, pv );
 
-    vec4 texelPosition = texture2D( positionMap, shiftUv );
-    texelPosition *= boundingBoxRange;
-    texelPosition += boundingBoxMin;
+    vec4 samplePosition = texture2D( positionMap, shiftUv );
+    samplePosition *= boundingBoxRange;
+    samplePosition += boundingBoxMin;
 
-    vec4 outPosition = vec4( texelPosition.rgb , 1.0 );
+    vec4 outPosition = vec4( samplePosition.xyz , 1.0 );
 
     gl_Position = projectionMatrix * modelViewMatrix * outPosition;
 
@@ -51,11 +52,11 @@ void main() {
         vec4 texelNormalPosition = texture2D( normalMap, shiftUv );
         texelNormalPosition *= boundingBoxRange;
         texelNormalPosition += boundingBoxMin;
-        vNormal = normalMatrix * texelNormalPosition.rgb;
+        vNormal = normalMatrix * texelNormalPosition.xyz;
 
     #else
         // Quality isn't high enough(work in progress)
-        vec3 decodedNormal = VAT_UnpackAlpha( texelPosition.a );
+        vec3 decodedNormal = VAT_UnpackAlpha( samplePosition.a );
         vNormal = normalMatrix * decodedNormal;
 
     #endif

@@ -139,23 +139,15 @@ const init = async () => {
         uniforms: uniforms,
         vertexShader: shaderData.vertex,
         fragmentShader: shaderData.fragment,
-        depthTest: true,
         lights: true,
         extensions: {
             derivatives: true,
         },
     });
 
-    mesh.position.set(20, 10, 0);
+    mesh.position.set(0, 10, 0);
     mesh.scale.set(10, 10, 10);
     scene.add(mesh);
-
-    const model2 = await loadGLTF('./assets/model/RubberToy.glb');
-
-    const mesh2 = model2.scenes[0].children[0];
-    mesh2.position.set(-20, 10, 0);
-    mesh2.scale.set(10, 10, 10);
-    scene.add(mesh2);
 };
 
 const animate = () => {

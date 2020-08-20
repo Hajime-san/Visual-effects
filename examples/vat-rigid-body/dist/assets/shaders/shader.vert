@@ -59,7 +59,7 @@ void main() {
     vec3 offsetPosition = position - pivot;
     vec3 rotatedPosition = RotateVectorUsingQuaternionFast( decodedRotation, offsetPosition );
 
-    vec3 outPosition = rotatedPosition + samplePosition.rgb;
+    vec3 outPosition = rotatedPosition + samplePosition.xyz;
 
     gl_Position = projectionMatrix * modelViewMatrix * vec4( outPosition, 1.0 );
 
