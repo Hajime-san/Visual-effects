@@ -47,12 +47,12 @@ void main() {
 
     vec4 outPosition = vec4( samplePosition.xyz , 1.0 );
 
-    vec4 cameraF = vec4(0.5 - uv.x, uv.y - 0.5, 0.0, 1.0);
-    cameraF *= vec4(0.1, 0.1, 0.0, 1.0);
-    cameraF = cameraF * modelViewMatrix;
-    vec4 finalPosition = cameraF + outPosition;
+    vec3 cameraF = vec3( 0.5 - uv.x, uv.y - 0.5, 0.0 );
+    cameraF *= vec3( 0.1, 0.1, 0.0 );
+    vec4 convertCamera = vec4( cameraF, 1.0 );
+    vec4 finalPosition = convertCamera + outPosition;
 
-    gl_Position = finalPosition;
+    gl_Position = projectionMatrix * modelViewMatrix * finalPosition;
 
     // float rotation = 0.0;
 
