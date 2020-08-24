@@ -1,8 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { Vector3 } from 'three';
-import { loadShaders, ShaderData, onWindowResize, loadGLTF, loadVATexrTexture, loadTexture } from '../../../modules/Util';
+import { loadShaders, ShaderData, onWindowResize, loadGLTF, loadVATexrTexture, loadTexture, getCameraConstant } from '../../../modules/Util';
 
 import data from '../../dist/assets/model/RubberToy_data.json';
 
@@ -84,8 +83,6 @@ const init = async () => {
 
     mesh = model.scenes[0].children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
-    console.log(mesh);
-
     const indicesLength = positionMap.image.width;
 
     uniforms = {
@@ -120,7 +117,7 @@ const init = async () => {
             value: 0,
         },
         scale: {
-            value: new Vector3(1, 1, 1),
+            value: new THREE.Vector2(10, 10),
         },
 
         // lights
@@ -138,7 +135,6 @@ const init = async () => {
     });
 
     mesh.position.set(0, 10, 0);
-    mesh.scale.set(1, 1, 1);
     scene.add(mesh);
 };
 

@@ -105,6 +105,10 @@ export const onWindowResize = (camera: THREE.PerspectiveCamera, renderer: THREE.
     renderer.setSize(window.innerWidth, window.innerHeight);
 };
 
+export const getCameraConstant = (camera: THREE.PerspectiveCamera) => {
+    return window.innerHeight / (Math.tan(THREE.MathUtils.DEG2RAD * 0.5 * camera.fov) / camera.zoom);
+};
+
 export const rangedRandom = (max: number, min: number) => {
     return Math.random() * (max - min) + min;
 };

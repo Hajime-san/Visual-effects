@@ -67,7 +67,9 @@ void main() {
 	#include <lights_fragment_end>
 	#include <aomap_fragment>
 	vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;
+
 	gl_FragColor = vec4( baseColor, diffuseColor.a );
+
 	#include <tonemapping_fragment>
 	#include <encodings_fragment>
 	#include <fog_fragment>
