@@ -17,8 +17,8 @@ uniform sampler2D positionMap;
 uniform sampler2D rotationMap;
 
 float frag = 1.0 / fragmentPieces;
-float boundingBoxRange = boudingBoxMax + ( boundingBoxMin * - 1.0 );
-float pivotRange = pivotMax + ( pivotMin * - 1.0 );
+float boundingBoxRange = boudingBoxMax - boundingBoxMin;
+float pivotRange = pivotMax - pivotMin;
 float texShift = 0.5 * frag;
 
 vec4 DecodeQuaternion(vec4 encodedRotation) {

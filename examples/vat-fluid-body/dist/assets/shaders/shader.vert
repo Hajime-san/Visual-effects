@@ -16,7 +16,7 @@ uniform sampler2D positionMap;
 uniform sampler2D normalMap;
 
 float frag = 1.0 / indicesLength;
-float boundingBoxRange = boudingBoxMax + ( boundingBoxMin * - 1.0 );
+float boundingBoxRange = boudingBoxMax - boundingBoxMin;
 float texShift = 0.5 * frag;
 
 vec3 VAT_UnpackAlpha(float a) {

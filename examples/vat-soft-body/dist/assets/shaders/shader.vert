@@ -9,14 +9,13 @@ attribute vec2 uv2;
 uniform float time;
 uniform float boudingBoxMax;
 uniform float boundingBoxMin;
-uniform float indicesLength;
 uniform float currentFrame;
 uniform float totalFrame;
 uniform sampler2D positionMap;
 uniform sampler2D normalMap;
 
 float frag = 1.0 / indicesLength;
-float boundingBoxRange = boudingBoxMax + ( boundingBoxMin * - 1.0 );
+float boundingBoxRange = boudingBoxMax - boundingBoxMin;
 float texShift = 0.5 * frag;
 
 vec3 VAT_UnpackAlpha(float a) {
