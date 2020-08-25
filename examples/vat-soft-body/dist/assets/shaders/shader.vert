@@ -9,6 +9,7 @@ attribute vec2 uv2;
 uniform float time;
 uniform float boudingBoxMax;
 uniform float boundingBoxMin;
+uniform float indicesLength;
 uniform float currentFrame;
 uniform float totalFrame;
 uniform sampler2D positionMap;
