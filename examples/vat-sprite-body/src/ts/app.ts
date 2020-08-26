@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { loadShaders, ShaderData, onWindowResize, loadGLTF, loadVATexrTexture, loadTexture, getCameraConstant } from '../../../modules/Util';
+import { loadShaders, ShaderData, onWindowResize, loadGLTF, loadVATexrTexture } from '../../../modules/Util';
 
 import data from '../../dist/assets/model/RubberToy_data.json';
 
@@ -83,8 +83,6 @@ const init = async () => {
 
     mesh = model.scenes[0].children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
-    const indicesLength = positionMap.image.width;
-
     uniforms = {
         positionMap: {
             value: positionMap,
@@ -105,9 +103,6 @@ const init = async () => {
         },
         scaleMin: {
             value: VATdata.scaleMin,
-        },
-        indicesLength: {
-            value: indicesLength,
         },
         // total animation frame
         totalFrame: {

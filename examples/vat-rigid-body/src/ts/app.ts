@@ -95,8 +95,6 @@ const init = async () => {
 
     const rotationMap = await loadVATexrTexture('./assets/images/RubberToy_rotation.exr');
 
-    const fragmentPieces = positionMap.image.width;
-
     uniforms = {
         positionMap: {
             value: positionMap,
@@ -123,10 +121,6 @@ const init = async () => {
         },
         pivotMin: {
             value: VATdata.pivMin,
-        },
-        // texture width
-        fragmentPieces: {
-            value: fragmentPieces,
         },
         // total animation frame
         totalFrame: {
