@@ -103,8 +103,6 @@ const init = async () => {
         }
     });
 
-    const indicesLength = positionMap.image.width;
-
     uniforms = {
         positionMap: {
             value: positionMap,
@@ -125,9 +123,6 @@ const init = async () => {
         // set bounding box for correct scale
         boundingBoxMin: {
             value: VATdata.posMin,
-        },
-        indicesLength: {
-            value: indicesLength,
         },
         // total animation frame
         totalFrame: {
