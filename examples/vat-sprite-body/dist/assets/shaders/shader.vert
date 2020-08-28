@@ -17,11 +17,11 @@ uniform vec2 scale;
 uniform sampler2D positionMap;
 uniform sampler2D normalMap;
 
-float boundingBoxRange = boudingBoxMax - boundingBoxMin;
-float scaleRange = scaleMax + ( scaleMin * - 1.0 );
 
 void main() {
-    // group id of child meshes for sampling texture's ultra
+
+    float boundingBoxRange = boudingBoxMax - boundingBoxMin;
+    float scaleRange = scaleMax + ( scaleMin * - 1.0 );
     float pu = uv2.x;
     float pv = 1.0 - fract( currentFrame / totalFrame );
     vec2 shiftUv = vec2( pu, pv );

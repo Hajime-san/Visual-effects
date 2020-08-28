@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
 import { loadShaders, ShaderData, onWindowResize, loadGLTF, loadVATexrTexture, loadTexture } from '../../../modules/Util';
 
-import data from '../../dist/assets/model/RubberToy_data.json';
+import data from '../../dist/assets/model/RubberToy/data.json';
 
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
@@ -77,10 +77,10 @@ const init = async () => {
     const light = new THREE.AmbientLight(0xffffff, 1.0);
     scene.add(light);
 
-    const positionMap = await loadVATexrTexture('./assets/images/RubberToy_position.exr');
+    const positionMap = await loadVATexrTexture('./assets/model/RubberToy/position.exr');
 
     // 8-bit png converted from exr
-    const normalMap = await loadTexture('./assets/images/RubberToy_normal.png');
+    const normalMap = await loadTexture('./assets/model/RubberToy/normal.png');
     normalMap.encoding = THREE.LinearEncoding;
     normalMap.minFilter = THREE.LinearFilter;
     normalMap.magFilter = THREE.NearestFilter;
@@ -91,7 +91,7 @@ const init = async () => {
         { key: 'fragment', path: './assets/shaders/shader.frag' },
     ]);
 
-    const model = await loadGLTF('./assets/model/RubberToy.glb');
+    const model = await loadGLTF('./assets/model/RubberToy/model.glb');
 
     mesh = model.scenes[0].children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 

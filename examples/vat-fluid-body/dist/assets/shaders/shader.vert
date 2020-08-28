@@ -14,7 +14,6 @@ uniform float totalFrame;
 uniform sampler2D positionMap;
 uniform sampler2D normalMap;
 
-float boundingBoxRange = boudingBoxMax - boundingBoxMin;
 
 vec3 VAT_UnpackAlpha(float a) {
     float a_hi = floor( a * 32.0 );
@@ -27,7 +26,8 @@ vec3 VAT_UnpackAlpha(float a) {
 }
 
 void main() {
-    // group id of child meshes for sampling texture's ultra
+
+    float boundingBoxRange = boudingBoxMax - boundingBoxMin;
     float pu = uv2.x;
     float pv = 1.0 - fract( currentFrame / totalFrame );
     vec2 shiftUv = vec2( pu, pv );

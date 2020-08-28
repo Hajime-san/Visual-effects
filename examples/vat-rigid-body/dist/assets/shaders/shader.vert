@@ -15,9 +15,6 @@ uniform float totalFrame;
 uniform sampler2D positionMap;
 uniform sampler2D rotationMap;
 
-float boundingBoxRange = boudingBoxMax - boundingBoxMin;
-float pivotRange = pivotMax - pivotMin;
-
 vec4 DecodeQuaternion(vec4 encodedRotation) {
     return vec4(mix( vec4(-1.0), vec4(1.0), encodedRotation));
 }
@@ -28,7 +25,8 @@ vec3 RotateVectorUsingQuaternionFast(vec4 q, vec3 v) {
 }
 
 void main() {
-    // group id of child meshes for sampling texture's ultra
+
+    float boundingBoxRange = boudingBoxMax - boundingBoxMin;
     float pu = uv2.x;
     float pv = 1.0 - fract( currentFrame / totalFrame );
     // float nextPv = 1.0 - fract( ceil( currentFrame ) / totalFrame );
@@ -50,6 +48,7 @@ void main() {
 
     // decode pivot from vertex color
     vec3 pivot = color;
+    float pivotRange = pivotMax - pivotMin;
     pivot *= pivotRange;
     pivot += pivotMin;
 
