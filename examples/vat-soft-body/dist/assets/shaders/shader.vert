@@ -54,6 +54,8 @@ void main() {
     #else
         // Quality isn't high enough(work in progress)
         vec3 decodedNormal = VAT_UnpackAlpha( samplePosition.a );
+        decodedNormal *= boundingBoxRange;
+        decodedNormal += boundingBoxMin;
         vNormal = normalMatrix * decodedNormal;
 
     #endif
