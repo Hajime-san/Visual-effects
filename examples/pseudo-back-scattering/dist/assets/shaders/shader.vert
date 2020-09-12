@@ -9,8 +9,8 @@ varying vec3 vPosition;
 
 void main() {
 
-    vUv1 = uv;
-    vUv2 = uv2;
+    vUv1 = vec2( uv.x, 1.0 - uv.y );
+    vUv2 = vec2( uv2.x, 1.0 - uv2.y );
 
     vPosition = position;
 
