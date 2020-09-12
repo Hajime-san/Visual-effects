@@ -95,6 +95,9 @@ const init = async () => {
         speed: {
             value: 0.5,
         },
+        scale: {
+            value: new THREE.Vector3(10, 10, 10),
+        },
     };
 
     const model = await loadGLTF('./assets/model/multi_uv.glb');
@@ -105,7 +108,6 @@ const init = async () => {
         uniforms: uniforms,
         vertexShader: shaderData.vertex,
         fragmentShader: shaderData.fragment,
-        depthTest: true,
         transparent: true,
     });
 
