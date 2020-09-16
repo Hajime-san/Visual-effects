@@ -42,18 +42,21 @@ varying vec3 vViewPosition;
 varying vec2 vUv;
 
 uniform float time;
+uniform float thresHold;
+uniform float TAASampleLevel;
 uniform sampler2D noiseTexture;
+uniform sampler2D colorTexture;
 
 
 void main() {
 
-    float thresHold = 0.5;
-
     vec2 screenPosition = gl_FragCoord.xy;
 
-    vec2 p = screenPosition + vec2(2.0);
+    vec2 p = screenPosition + vec2(TAASampleLevel);
 
     float c = mod( ((p.x) + 2.0 * (p.y)) , 5.0 );
+
+	vec4 colorTex = texture2D( colorTexture, vUv );
 
     vec4 noiseTex = texture2D( noiseTexture, screenPosition / vec2(64.0) );
 
@@ -63,7 +66,7 @@ void main() {
 
 
     #include <clipping_planes_fragment>
-	vec4 diffuseColor = vec4( vec3(0.5, 0.5, 0.5) , opacity );
+	vec4 diffuseColor = vec4( vec3(0.2, 0.5, 0.8) , op );
 	ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
 	vec3 totalEmissiveRadiance = emissive;
 	#include <logdepthbuf_fragment>
@@ -82,7 +85,11 @@ void main() {
 	#include <lights_fragment_end>
 	#include <aomap_fragment>
 	vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;
-	gl_FragColor = vec4( vec3(op) + outgoingLight, op );
+
+	if( op > 0.5 ) {
+		discard;
+	}
+	gl_FragColor = vec4( outgoingLight, 1.0 );
 	#include <tonemapping_fragment>
 	#include <encodings_fragment>
 	#include <fog_fragment>
