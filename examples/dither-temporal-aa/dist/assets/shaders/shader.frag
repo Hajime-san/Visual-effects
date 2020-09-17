@@ -46,6 +46,7 @@ uniform float thresHold;
 uniform float TAASampleLevel;
 uniform sampler2D noiseTexture;
 uniform sampler2D colorTexture;
+uniform sampler2D tDiffuse;
 
 
 void main() {
@@ -58,11 +59,15 @@ void main() {
 
 	vec4 colorTex = texture2D( colorTexture, vUv );
 
-    vec4 noiseTex = texture2D( noiseTexture, screenPosition / vec2(64.0) );
+	vec2 noiseTextureResolution = vec2(64.0);
+
+    vec4 noiseTex = texture2D( noiseTexture, screenPosition / noiseTextureResolution );
 
     float n = (c + noiseTex.r) / 6.0;
 
     float op = (n + thresHold) - 0.5;
+
+	vec4 color = texture2D( tDiffuse, vUv );
 
 
     #include <clipping_planes_fragment>
@@ -86,10 +91,15 @@ void main() {
 	#include <aomap_fragment>
 	vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;
 
-	if( op > 0.5 ) {
+	// float opacity;
+
+	if( op > 1.0 ) {
+		gl_FragColor = vec4( 1.0 );
 		discard;
 	}
-	gl_FragColor = vec4( outgoingLight, 1.0 );
+
+	gl_FragColor = vec4( color.rgb, thresHold );
+
 	#include <tonemapping_fragment>
 	#include <encodings_fragment>
 	#include <fog_fragment>

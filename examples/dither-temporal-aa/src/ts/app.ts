@@ -122,6 +122,9 @@ const init = async () => {
         time: {
             value: 0.0,
         },
+        tDiffuse: {
+            value: null,
+        },
 
         // lights
         ...THREE.UniformsLib.lights,
@@ -133,7 +136,7 @@ const init = async () => {
         fragmentShader: shaderData.fragment,
         blending: THREE.CustomBlending,
         // blendEquation: THREE.MinEquation,
-        blendDst: THREE.SrcColorFactor,
+        blendDst: THREE.DstColorFactor,
         lights: true,
         extensions: {
             derivatives: true,
@@ -171,7 +174,8 @@ const init = async () => {
     renderPass.enabled = false;
     composer.addPass(renderPass);
 
-    copyPass = new ShaderPass(CopyShader);
+    copyPass = new ShaderPass(material);
+    copyPass.renderToScreen = true;
     composer.addPass(copyPass);
 
     window.addEventListener(
