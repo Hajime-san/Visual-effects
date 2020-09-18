@@ -44,18 +44,18 @@ const init = async () => {
     gui.add(parameters, 'thresHold', 0.0, 1.0).onChange(() => {
         uniforms.thresHold.value = parameters.thresHold;
     });
-    gui.add(parameters, 'TAASampleLevel', {
-        'Level 0: 1 Sample': 0,
-        'Level 1: 2 Samples': 1,
-        'Level 2: 4 Samples': 2,
-        'Level 3: 8 Samples': 3,
-        'Level 4: 16 Samples': 4,
-        'Level 5: 32 Samples': 5,
-    }).onFinishChange(() => {
-        if (taaRenderPass) {
-            taaRenderPass.sampleLevel = parameters.TAASampleLevel;
-        }
-    });
+    // gui.add(parameters, 'TAASampleLevel', {
+    //     'Level 0: 1 Sample': 0,
+    //     'Level 1: 2 Samples': 1,
+    //     'Level 2: 4 Samples': 2,
+    //     'Level 3: 8 Samples': 3,
+    //     'Level 4: 16 Samples': 4,
+    //     'Level 5: 32 Samples': 5,
+    // }).onFinishChange(() => {
+    //     if (taaRenderPass) {
+    //         taaRenderPass.sampleLevel = parameters.TAASampleLevel;
+    //     }
+    // });
 
     // intial settings
     const container = document.getElementById('canvas');
@@ -158,6 +158,7 @@ const init = async () => {
     // postprocessing
 
     composer = new EffectComposer(renderer);
+    composer.setSize(512, 512);
     // composer.renderToScreen = false;
 
     postScene = new THREE.Scene();
@@ -182,7 +183,7 @@ const init = async () => {
         'resize',
         () => {
             onWindowResize(camera, renderer);
-            composer.setSize(window.innerWidth, window.innerHeight);
+            // composer.setSize(window.innerWidth, window.innerHeight);
         },
         false
     );
