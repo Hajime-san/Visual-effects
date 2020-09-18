@@ -31,7 +31,7 @@ class GuiUniforms {
     constructor() {
         this.thresHold = 0.5;
 
-        this.TAASampleLevel = 1;
+        this.TAASampleLevel = 0;
     }
 }
 
@@ -154,7 +154,6 @@ const init = async () => {
         box,
         new THREE.MeshBasicMaterial({
             color: 0xff0000,
-            blending: THREE.AdditiveBlending,
         })
     );
 
@@ -164,6 +163,7 @@ const init = async () => {
     // postprocessing
 
     composer = new EffectComposer(renderer);
+    composer.renderToScreen = false;
 
     taaRenderPass = new TAARenderPass(scene, camera);
     taaRenderPass.unbiased = false;
@@ -203,7 +203,7 @@ const animate = () => {
 
     composer.render();
 
-    // renderer.render(scene, camera);
+    renderer.render(scene, camera);
 };
 
 document.addEventListener('DOMContentLoaded', async () => {

@@ -94,11 +94,10 @@ void main() {
 	// float opacity;
 
 	if( op > 1.0 ) {
-		gl_FragColor = vec4( 1.0 );
 		discard;
 	}
 
-	gl_FragColor = vec4( color.rgb, thresHold );
+	gl_FragColor = vec4( color.rgb + outgoingLight, thresHold );
 
 	#include <tonemapping_fragment>
 	#include <encodings_fragment>
