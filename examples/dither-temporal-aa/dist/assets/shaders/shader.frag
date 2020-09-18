@@ -44,8 +44,7 @@ varying vec2 vUv;
 uniform float time;
 uniform float thresHold;
 uniform float TAASampleLevel;
-uniform sampler2D noiseTexture;
-uniform sampler2D colorTexture;
+uniform sampler2D ditherMap;
 uniform sampler2D tDiffuse;
 
 
@@ -57,11 +56,9 @@ void main() {
 
     float c = mod( ((p.x) + 2.0 * (p.y)) , 5.0 );
 
-	vec4 colorTex = texture2D( colorTexture, vUv );
+	vec2 ditherMapResolution = vec2(64.0);
 
-	vec2 noiseTextureResolution = vec2(64.0);
-
-    vec4 noiseTex = texture2D( noiseTexture, screenPosition / noiseTextureResolution );
+    vec4 noiseTex = texture2D( ditherMap, screenPosition / ditherMapResolution );
 
     float n = (c + noiseTex.r) / 6.0;
 

@@ -92,11 +92,7 @@ const init = async () => {
     const light = new THREE.AmbientLight(0xffffff, 1.0);
     scene.add(light);
 
-    const noiseTexture = await loadTexture('./assets/images/Good64x64TilingNoiseHighFreq.png');
-
-    const colorTexture = await loadTexture('./assets/images/stripe.jpg');
-    // noiseTexture.minFilter = THREE.LinearFilter;
-    // noiseTexture.magFilter = THREE.LinearFilter;
+    const ditherMap = await loadTexture('./assets/images/Good64x64TilingNoiseHighFreq.png');
 
     // set shader
     shaderData = await loadShaders([
@@ -107,11 +103,8 @@ const init = async () => {
     geometry = new THREE.SphereBufferGeometry(10, 32, 32);
 
     uniforms = {
-        noiseTexture: {
-            value: noiseTexture,
-        },
-        colorTexture: {
-            value: colorTexture,
+        ditherMap: {
+            value: ditherMap,
         },
         thresHold: {
             value: parameters.thresHold,
