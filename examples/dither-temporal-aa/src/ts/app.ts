@@ -9,7 +9,9 @@ import * as dat from 'dat.gui';
 import { loadShaders, ShaderData, onWindowResize, loadTexture, loadGLTF } from '../../../modules/Util';
 
 let camera: THREE.PerspectiveCamera;
+let postCamera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
+let postScene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
 let composer: EffectComposer;
 let copyPass: any;
@@ -156,14 +158,19 @@ const init = async () => {
     // postprocessing
 
     composer = new EffectComposer(renderer);
-    composer.renderToScreen = false;
+    // composer.renderToScreen = false;
 
-    taaRenderPass = new TAARenderPass(scene, camera);
+    postScene = new THREE.Scene();
+
+    postCamera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 2000);
+    camera.position.set(0, 30, 70);
+
+    taaRenderPass = new TAARenderPass(postScene, postCamera);
     taaRenderPass.unbiased = false;
     taaRenderPass.sampleLevel = parameters.TAASampleLevel;
     composer.addPass(taaRenderPass);
 
-    renderPass = new RenderPass(scene, camera);
+    renderPass = new RenderPass(postScene, postCamera);
     renderPass.enabled = false;
     composer.addPass(renderPass);
 
