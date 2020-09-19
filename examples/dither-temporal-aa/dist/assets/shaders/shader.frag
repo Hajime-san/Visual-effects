@@ -41,7 +41,6 @@ varying vec3 vViewPosition;
 
 varying vec2 vUv;
 
-uniform float time;
 uniform float thresHold;
 uniform float TAASampleLevel;
 uniform sampler2D ditherMap;
@@ -52,23 +51,25 @@ void main() {
 
     vec2 screenPosition = gl_FragCoord.xy;
 
-    vec2 p = screenPosition + vec2(TAASampleLevel);
+    vec2 antiAliasedScreenResolution = screenPosition + vec2(TAASampleLevel);
 
-    float c = mod( ((p.x) + 2.0 * (p.y)) , 5.0 );
+    float c = mod( ((antiAliasedScreenResolution.x) + 2.0 * (antiAliasedScreenResolution.y)) , 5.0 );
 
 	vec2 ditherMapResolution = vec2(64.0);
 
-    vec4 noiseTex = texture2D( ditherMap, screenPosition / ditherMapResolution );
+    vec4 ditheredScreenMap = texture2D( ditherMap, screenPosition / ditherMapResolution );
 
-    float n = (c + noiseTex.r) / 6.0;
+    float n = (c + ditheredScreenMap.r) / 6.0;
 
-    float op = (n + thresHold) - 0.5;
+    float mask = (n + thresHold) - 0.5;
 
-	vec4 color = texture2D( tDiffuse, vUv );
+	vec4 TAAMap = texture2D( tDiffuse, vUv );
+
+	vec4 baseColor = vec4(0.2, 0.5, 0.8, 1.0);
 
 
     #include <clipping_planes_fragment>
-	vec4 diffuseColor = vec4( vec3(0.2, 0.5, 0.8) , op );
+	vec4 diffuseColor = baseColor;
 	ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
 	vec3 totalEmissiveRadiance = emissive;
 	#include <logdepthbuf_fragment>
@@ -88,13 +89,11 @@ void main() {
 	#include <aomap_fragment>
 	vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;
 
-	// float opacity;
-
-	if( op > 1.0 ) {
+	if( mask > 1.0 ) {
 		discard;
 	}
 
-	gl_FragColor = vec4( color.rgb + outgoingLight, thresHold );
+	gl_FragColor = vec4( TAAMap.rgb + outgoingLight, thresHold );
 
 	#include <tonemapping_fragment>
 	#include <encodings_fragment>
