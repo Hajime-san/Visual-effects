@@ -21,19 +21,13 @@ let geometry: THREE.BufferGeometry;
 let material: THREE.ShaderMaterial;
 let mesh: THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 let uniforms: { [uniform: string]: THREE.IUniform };
-let time: number;
-let delta: THREE.Clock;
 let shaderData: ShaderData;
 
 class GuiUniforms {
     thresHold: number;
 
-    TAASampleLevel: number;
-
     constructor() {
         this.thresHold = 0.5;
-
-        this.TAASampleLevel = 0;
     }
 }
 
@@ -44,18 +38,6 @@ const init = async () => {
     gui.add(parameters, 'thresHold', 0.0, 1.0).onChange(() => {
         uniforms.thresHold.value = parameters.thresHold;
     });
-    // gui.add(parameters, 'TAASampleLevel', {
-    //     'Level 0: 1 Sample': 0,
-    //     'Level 1: 2 Samples': 1,
-    //     'Level 2: 4 Samples': 2,
-    //     'Level 3: 8 Samples': 3,
-    //     'Level 4: 16 Samples': 4,
-    //     'Level 5: 32 Samples': 5,
-    // }).onFinishChange(() => {
-    //     if (taaRenderPass) {
-    //         taaRenderPass.sampleLevel = parameters.TAASampleLevel;
-    //     }
-    // });
 
     // intial settings
     const container = document.getElementById('canvas');
@@ -70,10 +52,6 @@ const init = async () => {
     const controls = new OrbitControls(camera, renderer.domElement);
 
     scene = new THREE.Scene();
-
-    time = 0;
-
-    delta = new THREE.Clock();
 
     // floor
     const meshFloor = new THREE.Mesh(
@@ -112,10 +90,7 @@ const init = async () => {
             value: parameters.thresHold,
         },
         TAASampleLevel: {
-            value: parameters.TAASampleLevel,
-        },
-        time: {
-            value: 0.0,
+            value: 0,
         },
         tDiffuse: {
             value: null,
@@ -130,8 +105,7 @@ const init = async () => {
         vertexShader: shaderData.vertex,
         fragmentShader: shaderData.fragment,
         blending: THREE.CustomBlending,
-        // blendEquation: THREE.MinEquation,
-        blendDst: THREE.DstColorFactor,
+        blendDst: THREE.ZeroFactor,
         lights: true,
         extensions: {
             derivatives: true,
@@ -147,19 +121,23 @@ const init = async () => {
 
     const boxMesh = new THREE.Mesh(
         box,
-        new THREE.MeshBasicMaterial({
+        new THREE.MeshStandardMaterial({
             color: 0xff0000,
+            metalness: 0.5,
+            roughness: 0.3,
+            opacity: 0.3,
+            transparent: true,
         })
     );
 
     boxMesh.position.set(0, 10, -40);
+    boxMesh.rotation.set(10, 0, 10);
     scene.add(boxMesh);
 
     // postprocessing
 
     composer = new EffectComposer(renderer);
     composer.setSize(512, 512);
-    // composer.renderToScreen = false;
 
     postScene = new THREE.Scene();
 
@@ -168,7 +146,8 @@ const init = async () => {
 
     taaRenderPass = new TAARenderPass(postScene, postCamera);
     taaRenderPass.unbiased = false;
-    taaRenderPass.sampleLevel = parameters.TAASampleLevel;
+    taaRenderPass.enabled = true;
+    taaRenderPass.sampleLevel = 0;
     composer.addPass(taaRenderPass);
 
     renderPass = new RenderPass(postScene, postCamera);
@@ -179,28 +158,11 @@ const init = async () => {
     copyPass.renderToScreen = true;
     composer.addPass(copyPass);
 
-    window.addEventListener(
-        'resize',
-        () => {
-            onWindowResize(camera, renderer);
-            // composer.setSize(window.innerWidth, window.innerHeight);
-        },
-        false
-    );
+    window.addEventListener('resize', () => onWindowResize(camera, renderer), false);
 };
 
 const animate = () => {
     requestAnimationFrame(animate);
-
-    const frame = delta.getDelta();
-
-    time += frame;
-
-    mesh.material.uniforms.time.value = time;
-
-    taaRenderPass.enabled = true;
-
-    // taaRenderPass.accumulate = true;
 
     composer.render();
 
