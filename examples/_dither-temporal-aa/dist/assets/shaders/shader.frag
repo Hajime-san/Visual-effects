@@ -44,7 +44,6 @@ varying vec2 vUv;
 uniform float thresHold;
 uniform float TAASampleLevel;
 uniform sampler2D ditherMap;
-uniform sampler2D tDiffuse;
 
 
 void main() {
@@ -62,8 +61,6 @@ void main() {
     float n = (c + ditheredScreenMap.r) / 6.0;
 
     float mask = (n + thresHold) - 0.5;
-
-	vec4 TAAMap = texture2D( tDiffuse, vUv );
 
 	vec4 baseColor = vec4(0.2, 0.5, 0.8, 1.0);
 
@@ -93,7 +90,7 @@ void main() {
 		discard;
 	}
 
-	gl_FragColor = vec4( TAAMap.rgb + outgoingLight, thresHold );
+	gl_FragColor = vec4( outgoingLight, thresHold );
 
 	#include <tonemapping_fragment>
 	#include <encodings_fragment>

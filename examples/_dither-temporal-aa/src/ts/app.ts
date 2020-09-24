@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { CopyShader } from 'three/examples/jsm/shaders/CopyShader.js';
 import { TAARenderPass } from 'three/examples/jsm/postprocessing/TAARenderPass.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
@@ -79,12 +81,8 @@ const init = async () => {
             value: parameters.thresHold,
         },
         TAASampleLevel: {
-            value: 0,
+            value: 2,
         },
-        tDiffuse: {
-            value: null,
-        },
-
         // lights
         ...THREE.UniformsLib.lights,
     };
@@ -99,7 +97,7 @@ const init = async () => {
         uniforms: uniforms,
         vertexShader: shaderData.vertex,
         fragmentShader: shaderData.fragment,
-        blending: THREE.AdditiveBlending,
+        // blending: THREE.CustomBlending,
         lights: true,
         extensions: {
             derivatives: true,
@@ -131,23 +129,18 @@ const init = async () => {
     // postprocessing scene
 
     composer = new EffectComposer(renderer);
-    composer.setSize(512, 512);
 
-    postScene = new THREE.Scene();
-
-    postCamera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 2000);
-    postCamera.position.set(0, 30, 70);
-
-    const taaRenderPass = new TAARenderPass(postScene, postCamera);
+    const taaRenderPass = new TAARenderPass(baseScene, baseCamera, 0x000000, 0);
     taaRenderPass.unbiased = false;
-    taaRenderPass.enabled = true;
     taaRenderPass.sampleLevel = 0;
     composer.addPass(taaRenderPass);
 
-    // combine scenes
+    const renderPass = new RenderPass(baseScene, baseCamera);
+    renderPass.enabled = false;
+    composer.addPass(renderPass);
 
-    const mainScenePass = new RenderPass(baseScene, baseCamera);
-    composer.addPass(mainScenePass);
+    const copyPass = new ShaderPass(CopyShader);
+    composer.addPass(copyPass);
 
     window.addEventListener('resize', () => onWindowResize(baseCamera, renderer), false);
 };
@@ -156,6 +149,8 @@ const animate = () => {
     requestAnimationFrame(animate);
 
     composer.render();
+
+    // renderer.render(baseScene, baseCamera);
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
