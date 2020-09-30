@@ -40,15 +40,27 @@ varying vec3 vViewPosition;
 #include <clipping_planes_pars_fragment>
 
 varying vec2 vUv;
+varying vec4 vUvProj;
+varying float myDepth;
 
 uniform sampler2D tDiffuse;
+uniform vec3 cameraVector;
+
+float LinearEyeDepth(float z, vec4 _ZBufferParams) {
+    return 1.0 / (_ZBufferParams.z * z + _ZBufferParams.w);
+}
 
 void main() {
 
 	vec4 baseColor = vec4(0.2, 0.5, 0.8, 1.0);
 
+	vec2 screenPosition = gl_FragCoord.xy;
 
-	vec4 depthMap = texture2D( tDiffuse, vUv );
+	vec4 sceneZ = texture2DProj( tDiffuse, vUvProj );
+
+	vec4 sceneDepth = texture2D( tDiffuse, vUv );
+
+	float fade = saturate(0.5 * (myDepth - sceneDepth.r));
 
 
     #include <clipping_planes_fragment>
@@ -72,7 +84,7 @@ void main() {
 	#include <aomap_fragment>
 	vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;
 
-	gl_FragColor = vec4( depthMap.rgb, 1.0 );
+	gl_FragColor = vec4( sceneDepth.rgb, 1.0 * fade);
 
 	#include <tonemapping_fragment>
 	#include <encodings_fragment>

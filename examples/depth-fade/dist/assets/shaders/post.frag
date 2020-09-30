@@ -16,18 +16,14 @@ float readDepth( sampler2D depthSampler, vec2 coord ) {
 
 float LinearizeDepth( sampler2D depthSampler, vec2 uv) {
   float n = 1.0; // camera z near
-  float f = 100.0; // camera z far
+  float f = 2.0; // camera z far
   float z = texture2D(depthSampler, uv).x;
   return (2.0 * n) / (f + n - z * (f - n));
 }
 
-float saturate(float a) {
-    return clamp(a, 0.0, 1.0);
-}
-
 void main() {
     vec3 diffuse = texture2D( tDiffuse, vUv ).rgb;
-    float depth = LinearizeDepth( tDepth, vUv );
+    float depth = readDepth( tDepth, vUv );
 
     gl_FragColor.rgb = 1.0 - vec3( depth );
     gl_FragColor.a = 1.0;
