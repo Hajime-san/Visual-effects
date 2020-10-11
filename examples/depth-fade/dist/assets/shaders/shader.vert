@@ -1,7 +1,7 @@
 varying vec2 vUv;
 varying vec3 vViewPosition;
 varying vec3 vNormal;
-varying float myDepth;
+varying float partZ;
 
 uniform mat4 textureMatrix;
 varying vec4 vUvProj;
@@ -20,9 +20,7 @@ void main() {
 
     vec4 o = ComputeNonStereoScreenPos(projectionMatrix * vec4( position, 1.0 ));
 
-    float depth = - o.z;
-
-    myDepth = depth;
+    partZ = - o.z;
 
     gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 

@@ -102,13 +102,22 @@ const init = async () => {
 
     sphereGeometry = new THREE.SphereBufferGeometry(10, 32, 32);
 
+    const near = 1;
+    const far = 100;
+
     uniforms = {
         tDiffuse: {
             value: null,
         },
-        cameraVector: {
-            value: baseCamera.position,
+        thresHold: {
+            value: parameters.thresHold,
         },
+        ZBufferParams: {
+            value: new THREE.Vector4(1 - far / near, far / near, (1 - far / near) / far, far / near / far),
+        },
+        // cameraPosition: {
+        //     value: baseCamera.position,
+        // },
         // lights
         ...THREE.UniformsLib.lights,
     };
@@ -156,6 +165,8 @@ const init = async () => {
     boxMesh.rotation.set(10, 0, 10);
     baseScene.add(boxMesh);
 
+    setupRenderTarget();
+
     function setupPost() {
         // Setup post processing stage
         postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -164,16 +175,16 @@ const init = async () => {
             fragmentShader: shaderData.postFragment,
             uniforms: {
                 cameraNear: {
-                    value: baseCamera.near,
+                    value: near,
                 },
                 cameraFar: {
-                    value: baseCamera.far,
+                    value: far,
                 },
                 tDiffuse: {
-                    value: null,
+                    value: target.texture,
                 },
                 tDepth: {
-                    value: null,
+                    value: target.depthTexture,
                 },
             },
         });
@@ -185,21 +196,6 @@ const init = async () => {
 
     setupPost();
 
-    setupRenderTarget();
-
-    composer = new EffectComposer(renderer, target);
-
-    const customPass = new ShaderPass(postMaterial);
-    customPass.renderToScreen = true;
-    composer.addPass(customPass);
-
-    const renderPass = new RenderPass(baseScene, baseCamera);
-    // renderPass.enabled = false;
-    composer.addPass(renderPass);
-
-    // const taaRenderPass = new RenderPass(postScene, postCamera);
-    // composer.addPass(taaRenderPass);
-
     window.addEventListener('resize', () => onWindowResize(baseCamera, renderer), false);
 };
 
@@ -207,27 +203,17 @@ const animate = () => {
     requestAnimationFrame(animate);
 
     // render scene into target
-    // renderer.setRenderTarget(target);
-    // renderer.render(baseScene, baseCamera);
+    renderer.setRenderTarget(target);
+    renderer.render(baseScene, baseCamera);
 
     // // render post FX
-    // postMaterial.uniforms.tDiffuse.value = target.texture;
-    // postMaterial.uniforms.tDepth.value = target.depthTexture;
+    postMaterial.uniforms.tDiffuse.value = target.texture;
+    postMaterial.uniforms.tDepth.value = target.depthTexture;
 
-    // // const p = target.clone();
+    renderer.setRenderTarget(null);
+    renderer.render(baseScene, baseCamera);
 
-    // renderer.setRenderTarget(null);
-    // renderer.render(postScene, postCamera);
-
-    composer.render();
-
-    sphereMaterial.uniforms.tDiffuse.value = target.texture;
-
-    controls.update();
-
-    sphereMaterial.uniforms.cameraVector.value = baseCamera.position;
-
-    // console.log(baseCamera.position.z);
+    sphereMaterial.uniforms.tDiffuse.value = target.depthTexture;
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
