@@ -80,6 +80,8 @@ const init = async () => {
         { key: 'fragment', path: './assets/shaders/shader.frag' },
     ]);
 
+    const SCALE = new THREE.Vector3().setScalar(10);
+
     // set uniform variable
     uniforms = {
         texture: {
@@ -90,6 +92,9 @@ const init = async () => {
         },
         speed: {
             value: 0.5,
+        },
+        scale: {
+            value: new THREE.Vector3(SCALE.x, SCALE.y, SCALE.z),
         },
 
         // lights
@@ -110,9 +115,8 @@ const init = async () => {
         side: THREE.DoubleSide,
     });
 
-    model.scene.position.set(30, 25, -20);
-    model.scene.rotation.set(0, 0, 70);
-    model.scene.scale.set(10, 10, 10);
+    model.scene.position.set(20, 45, -20);
+    model.scene.scale.setScalar(SCALE.x);
     scene.add(model.scene);
 };
 
