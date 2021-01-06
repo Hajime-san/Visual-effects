@@ -11,10 +11,18 @@ let colorPassMesh: THREE.Mesh<THREE.PlaneBufferGeometry, THREE.ShaderMaterial>;
 let brightnessPassMesh: THREE.Mesh<THREE.PlaneBufferGeometry, THREE.ShaderMaterial>;
 let horizontalBlurPassMesh: THREE.Mesh<THREE.PlaneBufferGeometry, THREE.ShaderMaterial>;
 let verticalBlurPassMesh: THREE.Mesh<THREE.PlaneBufferGeometry, THREE.ShaderMaterial>;
+let horizontalBlurPassMesh2: THREE.Mesh<THREE.PlaneBufferGeometry, THREE.ShaderMaterial>;
+let verticalBlurPassMesh2: THREE.Mesh<THREE.PlaneBufferGeometry, THREE.ShaderMaterial>;
+let horizontalBlurPassMesh3: THREE.Mesh<THREE.PlaneBufferGeometry, THREE.ShaderMaterial>;
+let verticalBlurPassMesh3: THREE.Mesh<THREE.PlaneBufferGeometry, THREE.ShaderMaterial>;
 let colorPassTarget: THREE.WebGLRenderTarget;
 let brightnessPass: THREE.WebGLRenderTarget;
 let horizontalBlurPass: THREE.WebGLRenderTarget;
 let verticalBlurPass: THREE.WebGLRenderTarget;
+let horizontalBlurPass2: THREE.WebGLRenderTarget;
+let verticalBlurPass2: THREE.WebGLRenderTarget;
+let horizontalBlurPass3: THREE.WebGLRenderTarget;
+let verticalBlurPass3: THREE.WebGLRenderTarget;
 let renderer: THREE.WebGLRenderer;
 let controls: OrbitControls;
 
@@ -35,7 +43,7 @@ type BlurParam = {
     offset: THREE.Vector3[];
 };
 
-const CalcBlurParam = (width: number, height: number, dir: THREE.Vector2, deviation: number) => {
+const CalcBlurParam = (width: number, height: number, dir: THREE.Vector2, deviation: number, multiply: number) => {
     const offsets = [];
 
     for (let i = 0; i < 15; i += 1) {
@@ -50,7 +58,7 @@ const CalcBlurParam = (width: number, height: number, dir: THREE.Vector2, deviat
     result.sampleCount = 15;
     const tu = 1.0 / width;
     const tv = 1.0 / height;
-    result.offset[0].z = GaussianDistribution(new THREE.Vector2(0.0, 0.0), deviation);
+    result.offset[0].z = GaussianDistribution(new THREE.Vector2(0.0, 0.0), deviation) * multiply;
     let totalWeight = result.offset[0].z;
     result.offset[0].x = 0.0;
     result.offset[0].y = 0.0;
@@ -59,7 +67,7 @@ const CalcBlurParam = (width: number, height: number, dir: THREE.Vector2, deviat
         result.offset[i].x = dir.x * i * tu;
         result.offset[i].y = dir.y * i * tv;
         const off = new THREE.Vector2(dir.x * i, dir.y * i);
-        result.offset[i].z = GaussianDistribution(off, deviation);
+        result.offset[i].z = GaussianDistribution(off, deviation) * multiply;
         totalWeight += result.offset[i].z * 2.0;
     }
 
@@ -172,8 +180,9 @@ const init = async () => {
     postScene.add(colorPassMesh);
 
     colorPassTarget = new THREE.WebGLRenderTarget(container.clientWidth, container.clientHeight);
-    // target.texture.minFilter = THREE.LinearFilter;
-    // target.texture.magFilter = THREE.LinearFilter;
+
+    const blurPassWidth = container.clientWidth / 4.0;
+    const blurPassHeight = container.clientHeight / 4.0;
 
     const brightnessPassMaterial = new THREE.ShaderMaterial({
         vertexShader: shaderData.planeVertex,
@@ -190,13 +199,11 @@ const init = async () => {
     brightnessPassMesh = new THREE.Mesh(passPlane, brightnessPassMaterial);
     postScene.add(brightnessPassMesh);
 
-    brightnessPass = new THREE.WebGLRenderTarget(container.clientWidth, container.clientHeight);
+    brightnessPass = new THREE.WebGLRenderTarget(blurPassWidth, blurPassHeight);
 
-    const w = container.clientWidth / 2.0;
-    const h = container.clientHeight / 2.0;
-    const deviation = 100.0;
+    const deviation = 2.5;
 
-    const blurX = CalcBlurParam(w, h, new THREE.Vector2(1.0, 0.0), deviation);
+    const blurX = CalcBlurParam(blurPassWidth, blurPassHeight, new THREE.Vector2(1.0, 0.0), deviation, 2.0);
 
     const horizontalPassMaterial = new THREE.ShaderMaterial({
         vertexShader: shaderData.planeVertex,
@@ -205,65 +212,17 @@ const init = async () => {
             brightnessPassTexture: {
                 value: null,
             },
-            colorPass: {
-                value: null,
-            },
-            resolution: {
-                value: new THREE.Vector2(container.clientWidth, container.clientHeight),
-            },
-            blurX1: {
-                value: blurX.offset[0],
-            },
-            blurX2: {
-                value: blurX.offset[1],
-            },
-            blurX3: {
-                value: blurX.offset[2],
-            },
-            blurX4: {
-                value: blurX.offset[3],
-            },
-            blurX5: {
-                value: blurX.offset[4],
-            },
-            blurX6: {
-                value: blurX.offset[5],
-            },
-            blurX7: {
-                value: blurX.offset[6],
-            },
-            blurX8: {
-                value: blurX.offset[7],
-            },
-            blurX9: {
-                value: blurX.offset[8],
-            },
-            blurX10: {
-                value: blurX.offset[9],
-            },
-            blurX11: {
-                value: blurX.offset[10],
-            },
-            blurX12: {
-                value: blurX.offset[11],
-            },
-            blurX13: {
-                value: blurX.offset[12],
-            },
-            blurX14: {
-                value: blurX.offset[13],
-            },
-            blurX15: {
-                value: blurX.offset[14],
+            deviation: {
+                value: blurX.offset,
             },
         },
     });
     horizontalBlurPassMesh = new THREE.Mesh(passPlane, horizontalPassMaterial);
     postScene.add(horizontalBlurPassMesh);
 
-    horizontalBlurPass = new THREE.WebGLRenderTarget(container.clientWidth, container.clientHeight);
+    horizontalBlurPass = new THREE.WebGLRenderTarget(blurPassWidth, blurPassHeight);
 
-    const blurY = CalcBlurParam(w, h, new THREE.Vector2(0.0, 1.0), deviation);
+    const blurY = CalcBlurParam(blurPassWidth, blurPassHeight, new THREE.Vector2(0.0, 1.0), deviation, 2.0);
 
     const verticalPassMaterial = new THREE.ShaderMaterial({
         vertexShader: shaderData.planeVertex,
@@ -275,60 +234,100 @@ const init = async () => {
             colorPassTexture: {
                 value: null,
             },
-            resolution: {
-                value: new THREE.Vector2(container.clientWidth, container.clientHeight),
-            },
-            blurY1: {
-                value: blurY.offset[0],
-            },
-            blurY2: {
-                value: blurY.offset[1],
-            },
-            blurY3: {
-                value: blurY.offset[2],
-            },
-            blurY4: {
-                value: blurY.offset[3],
-            },
-            blurY5: {
-                value: blurY.offset[4],
-            },
-            blurY6: {
-                value: blurY.offset[5],
-            },
-            blurY7: {
-                value: blurY.offset[6],
-            },
-            blurY8: {
-                value: blurY.offset[7],
-            },
-            blurY9: {
-                value: blurY.offset[8],
-            },
-            blurY10: {
-                value: blurY.offset[9],
-            },
-            blurY11: {
-                value: blurY.offset[10],
-            },
-            blurY12: {
-                value: blurY.offset[11],
-            },
-            blurY13: {
-                value: blurY.offset[12],
-            },
-            blurY14: {
-                value: blurY.offset[13],
-            },
-            blurY15: {
-                value: blurY.offset[14],
+            deviation: {
+                value: blurY.offset,
             },
         },
     });
     verticalBlurPassMesh = new THREE.Mesh(passPlane, verticalPassMaterial);
     postScene.add(verticalBlurPassMesh);
 
-    verticalBlurPass = new THREE.WebGLRenderTarget(container.clientWidth, container.clientHeight);
+    verticalBlurPass = new THREE.WebGLRenderTarget(blurPassWidth, blurPassHeight);
+
+    const blurX2 = CalcBlurParam(blurPassWidth / 2.0, blurPassHeight / 2.0, new THREE.Vector2(1.0, 0.0), deviation, 4.0);
+
+    const horizontalPassMaterial2 = new THREE.ShaderMaterial({
+        vertexShader: shaderData.planeVertex,
+        fragmentShader: shaderData.horizontalBlurFragment,
+        uniforms: {
+            brightnessPassTexture: {
+                value: null,
+            },
+            deviation: {
+                value: blurX2.offset,
+            },
+        },
+    });
+    horizontalBlurPassMesh2 = new THREE.Mesh(passPlane, horizontalPassMaterial2);
+    postScene.add(horizontalBlurPassMesh2);
+
+    horizontalBlurPass2 = new THREE.WebGLRenderTarget(blurPassWidth / 2.0, blurPassHeight / 2.0);
+
+
+    const blurY2 = CalcBlurParam(blurPassWidth / 2.0, blurPassHeight / 2.0, new THREE.Vector2(0.0, 1.0), deviation, 4.0);
+
+    const verticalPassMaterial2 = new THREE.ShaderMaterial({
+        vertexShader: shaderData.planeVertex,
+        fragmentShader: shaderData.verticalBlurFragment,
+        uniforms: {
+            horizontalPassTexture: {
+                value: null,
+            },
+            colorPassTexture: {
+                value: null,
+            },
+            deviation: {
+                value: blurY2.offset,
+            },
+        },
+    });
+    verticalBlurPassMesh2 = new THREE.Mesh(passPlane, verticalPassMaterial2);
+    postScene.add(verticalBlurPassMesh2);
+
+    verticalBlurPass2 = new THREE.WebGLRenderTarget(blurPassWidth / 2.0, blurPassHeight / 2.0);
+
+
+    const blurX3 = CalcBlurParam(blurPassWidth / 4.0, blurPassHeight / 4.0, new THREE.Vector2(1.0, 0.0), deviation, 8.0);
+
+    const horizontalPassMaterial3 = new THREE.ShaderMaterial({
+        vertexShader: shaderData.planeVertex,
+        fragmentShader: shaderData.horizontalBlurFragment,
+        uniforms: {
+            brightnessPassTexture: {
+                value: null,
+            },
+            deviation: {
+                value: blurX3.offset,
+            },
+        },
+    });
+    horizontalBlurPassMesh3 = new THREE.Mesh(passPlane, horizontalPassMaterial3);
+    postScene.add(horizontalBlurPassMesh3);
+
+    horizontalBlurPass3 = new THREE.WebGLRenderTarget(blurPassWidth / 4.0, blurPassHeight / 4.0);
+
+
+    const blurY3 = CalcBlurParam(blurPassWidth / 4.0, blurPassHeight / 4.0, new THREE.Vector2(0.0, 1.0), deviation, 8.0);
+
+    const verticalPassMaterial3 = new THREE.ShaderMaterial({
+        vertexShader: shaderData.planeVertex,
+        fragmentShader: shaderData.verticalBlurFragment,
+        uniforms: {
+            horizontalPassTexture: {
+                value: null,
+            },
+            colorPassTexture: {
+                value: null,
+            },
+            deviation: {
+                value: blurY3.offset,
+            },
+        },
+    });
+    verticalBlurPassMesh3 = new THREE.Mesh(passPlane, verticalPassMaterial3);
+    postScene.add(verticalBlurPassMesh3);
+
+    verticalBlurPass3 = new THREE.WebGLRenderTarget(blurPassWidth / 4.0, blurPassHeight / 4.0);
 
     window.addEventListener('resize', () => onWindowResize(baseCamera, renderer), false);
 };
@@ -344,6 +343,10 @@ const animate = () => {
     brightnessPassMesh.visible = false;
     horizontalBlurPassMesh.visible = false;
     verticalBlurPassMesh.visible = false;
+    horizontalBlurPassMesh2.visible = false;
+    verticalBlurPassMesh2.visible = false;
+    horizontalBlurPassMesh3.visible = false;
+    verticalBlurPassMesh3.visible = false;
 
     colorPassMesh.material.uniforms.colorPassTexture.value = colorPassTarget.texture;
 
@@ -354,6 +357,10 @@ const animate = () => {
     brightnessPassMesh.visible = true;
     horizontalBlurPassMesh.visible = false;
     verticalBlurPassMesh.visible = false;
+    horizontalBlurPassMesh2.visible = false;
+    verticalBlurPassMesh2.visible = false;
+    horizontalBlurPassMesh3.visible = false;
+    verticalBlurPassMesh3.visible = false;
 
     brightnessPassMesh.material.uniforms.colorPassTexture.value = brightnessPass.texture;
 
@@ -364,6 +371,10 @@ const animate = () => {
     brightnessPassMesh.visible = false;
     horizontalBlurPassMesh.visible = true;
     verticalBlurPassMesh.visible = false;
+    horizontalBlurPassMesh2.visible = false;
+    verticalBlurPassMesh2.visible = false;
+    horizontalBlurPassMesh3.visible = false;
+    verticalBlurPassMesh3.visible = false;
 
     horizontalBlurPassMesh.material.uniforms.brightnessPassTexture.value = horizontalBlurPass.texture;
 
@@ -374,9 +385,70 @@ const animate = () => {
     brightnessPassMesh.visible = false;
     horizontalBlurPassMesh.visible = false;
     verticalBlurPassMesh.visible = true;
+    horizontalBlurPassMesh2.visible = false;
+    verticalBlurPassMesh2.visible = false;
+    horizontalBlurPassMesh3.visible = false;
+    verticalBlurPassMesh3.visible = false;
 
-    verticalBlurPassMesh.material.uniforms.colorPassTexture.value = colorPassTarget.texture;
     verticalBlurPassMesh.material.uniforms.horizontalPassTexture.value = verticalBlurPass.texture;
+
+    renderer.setRenderTarget(horizontalBlurPass2);
+    renderer.render(postScene, postCamera);
+
+    colorPassMesh.visible = false;
+    brightnessPassMesh.visible = false;
+    horizontalBlurPassMesh.visible = false;
+    verticalBlurPassMesh.visible = false;
+    horizontalBlurPassMesh2.visible = true;
+    verticalBlurPassMesh2.visible = false;
+    horizontalBlurPassMesh3.visible = false;
+    verticalBlurPassMesh3.visible = false;
+
+    horizontalBlurPassMesh2.material.uniforms.brightnessPassTexture.value = horizontalBlurPass2.texture;
+
+    renderer.setRenderTarget(verticalBlurPass2);
+    renderer.render(postScene, postCamera);
+
+    colorPassMesh.visible = false;
+    brightnessPassMesh.visible = false;
+    horizontalBlurPassMesh.visible = false;
+    verticalBlurPassMesh.visible = false;
+    horizontalBlurPassMesh2.visible = false;
+    verticalBlurPassMesh2.visible = true;
+    horizontalBlurPassMesh3.visible = false;
+    verticalBlurPassMesh3.visible = false;
+
+    // verticalBlurPassMesh2.material.uniforms.colorPassTexture.value = colorPassTarget.texture;
+    verticalBlurPassMesh2.material.uniforms.horizontalPassTexture.value = verticalBlurPass2.texture;
+
+    renderer.setRenderTarget(horizontalBlurPass3);
+    renderer.render(postScene, postCamera);
+
+    colorPassMesh.visible = false;
+    brightnessPassMesh.visible = false;
+    horizontalBlurPassMesh.visible = false;
+    verticalBlurPassMesh.visible = false;
+    horizontalBlurPassMesh2.visible = false;
+    verticalBlurPassMesh2.visible = false;
+    horizontalBlurPassMesh3.visible = true;
+    verticalBlurPassMesh3.visible = false;
+
+    horizontalBlurPassMesh3.material.uniforms.brightnessPassTexture.value = horizontalBlurPass3.texture;
+
+    renderer.setRenderTarget(verticalBlurPass3);
+    renderer.render(postScene, postCamera);
+
+    colorPassMesh.visible = false;
+    brightnessPassMesh.visible = false;
+    horizontalBlurPassMesh.visible = false;
+    verticalBlurPassMesh.visible = false;
+    horizontalBlurPassMesh2.visible = false;
+    verticalBlurPassMesh2.visible = false;
+    horizontalBlurPassMesh3.visible = false;
+    verticalBlurPassMesh3.visible = true;
+
+    verticalBlurPassMesh3.material.uniforms.colorPassTexture.value = colorPassTarget.texture;
+    verticalBlurPassMesh3.material.uniforms.horizontalPassTexture.value = verticalBlurPass3.texture;
 
     renderer.setRenderTarget(null);
     renderer.render(postScene, postCamera);
