@@ -7,7 +7,6 @@ uniform sampler2D blurBuffer2;
 uniform sampler2D blurBuffer3;
 uniform sampler2D blurBuffer4;
 uniform sampler2D blurBuffer5;
-uniform sampler2D resultPass;
 
 void main() {
 
