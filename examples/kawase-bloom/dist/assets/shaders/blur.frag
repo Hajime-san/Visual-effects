@@ -1,6 +1,6 @@
 varying vec2 vUv;
 
-uniform sampler2D brightnessPassTexture;
+uniform sampler2D blurPass;
 uniform vec3 deviation[15];
 
 void main() {
@@ -8,7 +8,7 @@ void main() {
     vec4 result;
 
     for(int i = 0; i < 15; ++i) {
-        result += texture2D( brightnessPassTexture, vUv + deviation[i].xy ) * vec4( deviation[i].z );
+        result += texture2D( blurPass, vUv + deviation[i].xy ) * vec4( deviation[i].z );
     }
 
     gl_FragColor = result;
