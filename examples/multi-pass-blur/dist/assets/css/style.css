@@ -30,3 +30,11 @@ main {
     color: dodgerblue;
     font-size: 20px;
 }
+/*
+.bufferWrapper {
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+} */

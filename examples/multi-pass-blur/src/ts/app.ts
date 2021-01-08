@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { loadShaders, onWindowResize } from '../../../modules/Util';
+import { loadShaders, loadTexture, onWindowResize } from '../../../modules/Util';
 
 let baseCamera: THREE.PerspectiveCamera;
 let postCamera: THREE.OrthographicCamera;
@@ -27,6 +27,10 @@ let verticalBlurPass3: THREE.WebGLRenderTarget;
 let compositePass: THREE.WebGLRenderTarget;
 let renderer: THREE.WebGLRenderer;
 let controls: OrbitControls;
+
+let subScene: THREE.Scene;
+let subCamera: THREE.OrthographicCamera;
+const buffers = [];
 
 class GuiUniforms {
     brightnessThresHold: number;
@@ -122,9 +126,9 @@ const init = async () => {
     baseScene.add(meshFloor);
 
     // lights
-    // const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    // directionalLight.position.set(10, 1, 10);
-    // baseScene.add(directionalLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(10, 1, 10);
+    baseScene.add(directionalLight);
 
     const light = new THREE.AmbientLight(0xffffff, 1.0);
     baseScene.add(light);
@@ -182,6 +186,9 @@ const init = async () => {
     postScene.add(colorPassMesh);
 
     colorPassTarget = new THREE.WebGLRenderTarget(container.clientWidth, container.clientHeight);
+    // colorPassTarget.texture.magFilter = THREE.LinearFilter;
+    // colorPassTarget.texture.magFilter = THREE.LinearFilter;
+    // colorPassTarget.texture.format = THREE.RGBAFormat;
 
     const blurPassWidth = container.clientWidth / 4.0;
     const blurPassHeight = container.clientHeight / 4.0;
@@ -202,6 +209,9 @@ const init = async () => {
     postScene.add(brightnessPassMesh);
 
     brightnessPass = new THREE.WebGLRenderTarget(blurPassWidth, blurPassHeight);
+    brightnessPass.texture.magFilter = THREE.LinearFilter;
+    brightnessPass.texture.magFilter = THREE.LinearFilter;
+    brightnessPass.texture.format = THREE.RGBAFormat;
 
     const deviation = 50;
 
@@ -210,6 +220,7 @@ const init = async () => {
     const horizontalPassMaterial = new THREE.ShaderMaterial({
         vertexShader: shaderData.planeVertex,
         fragmentShader: shaderData.blurFragment,
+        blending: THREE.AdditiveBlending,
         uniforms: {
             blurPass: {
                 value: null,
@@ -223,12 +234,16 @@ const init = async () => {
     postScene.add(horizontalBlurPassMesh);
 
     horizontalBlurPass = new THREE.WebGLRenderTarget(blurPassWidth, blurPassHeight);
+    horizontalBlurPass.texture.magFilter = THREE.LinearFilter;
+    horizontalBlurPass.texture.magFilter = THREE.LinearFilter;
+    horizontalBlurPass.texture.format = THREE.RGBAFormat;
 
     const blurY = CalcBlurParam(blurPassWidth, blurPassHeight, new THREE.Vector2(0.0, 1.0), deviation, 2.0);
 
     const verticalPassMaterial = new THREE.ShaderMaterial({
         vertexShader: shaderData.planeVertex,
         fragmentShader: shaderData.blurFragment,
+        blending: THREE.AdditiveBlending,
         uniforms: {
             blurPass: {
                 value: null,
@@ -242,12 +257,16 @@ const init = async () => {
     postScene.add(verticalBlurPassMesh);
 
     verticalBlurPass = new THREE.WebGLRenderTarget(blurPassWidth, blurPassHeight);
+    verticalBlurPass.texture.magFilter = THREE.LinearFilter;
+    verticalBlurPass.texture.magFilter = THREE.LinearFilter;
+    verticalBlurPass.texture.format = THREE.RGBAFormat;
 
     const blurX2 = CalcBlurParam(blurPassWidth / 2.0, blurPassHeight / 2.0, new THREE.Vector2(1.0, 0.0), deviation, 4.0);
 
     const horizontalPassMaterial2 = new THREE.ShaderMaterial({
         vertexShader: shaderData.planeVertex,
         fragmentShader: shaderData.blurFragment,
+        blending: THREE.AdditiveBlending,
         uniforms: {
             blurPass: {
                 value: null,
@@ -261,12 +280,16 @@ const init = async () => {
     postScene.add(horizontalBlurPassMesh2);
 
     horizontalBlurPass2 = new THREE.WebGLRenderTarget(blurPassWidth / 2.0, blurPassHeight / 2.0);
+    horizontalBlurPass2.texture.magFilter = THREE.LinearFilter;
+    horizontalBlurPass2.texture.magFilter = THREE.LinearFilter;
+    horizontalBlurPass2.texture.format = THREE.RGBAFormat;
 
     const blurY2 = CalcBlurParam(blurPassWidth / 2.0, blurPassHeight / 2.0, new THREE.Vector2(0.0, 1.0), deviation, 4.0);
 
     const verticalPassMaterial2 = new THREE.ShaderMaterial({
         vertexShader: shaderData.planeVertex,
         fragmentShader: shaderData.blurFragment,
+        blending: THREE.AdditiveBlending,
         uniforms: {
             blurPass: {
                 value: null,
@@ -280,12 +303,16 @@ const init = async () => {
     postScene.add(verticalBlurPassMesh2);
 
     verticalBlurPass2 = new THREE.WebGLRenderTarget(blurPassWidth / 2.0, blurPassHeight / 2.0);
+    verticalBlurPass2.texture.magFilter = THREE.LinearFilter;
+    verticalBlurPass2.texture.magFilter = THREE.LinearFilter;
+    verticalBlurPass2.texture.format = THREE.RGBAFormat;
 
     const blurX3 = CalcBlurParam(blurPassWidth / 4.0, blurPassHeight / 4.0, new THREE.Vector2(1.0, 0.0), deviation, 8.0);
 
     const horizontalPassMaterial3 = new THREE.ShaderMaterial({
         vertexShader: shaderData.planeVertex,
         fragmentShader: shaderData.blurFragment,
+        blending: THREE.AdditiveBlending,
         uniforms: {
             blurPass: {
                 value: null,
@@ -299,12 +326,16 @@ const init = async () => {
     postScene.add(horizontalBlurPassMesh3);
 
     horizontalBlurPass3 = new THREE.WebGLRenderTarget(blurPassWidth / 4.0, blurPassHeight / 4.0);
+    horizontalBlurPass3.texture.magFilter = THREE.LinearFilter;
+    horizontalBlurPass3.texture.magFilter = THREE.LinearFilter;
+    horizontalBlurPass3.texture.format = THREE.RGBAFormat;
 
     const blurY3 = CalcBlurParam(blurPassWidth / 4.0, blurPassHeight / 4.0, new THREE.Vector2(0.0, 1.0), deviation, 8.0);
 
     const verticalPassMaterial3 = new THREE.ShaderMaterial({
         vertexShader: shaderData.planeVertex,
         fragmentShader: shaderData.blurFragment,
+        blending: THREE.AdditiveBlending,
         uniforms: {
             blurPass: {
                 value: null,
@@ -318,33 +349,25 @@ const init = async () => {
     postScene.add(verticalBlurPassMesh3);
 
     verticalBlurPass3 = new THREE.WebGLRenderTarget(blurPassWidth / 4.0, blurPassHeight / 4.0);
+    verticalBlurPass3.texture.magFilter = THREE.LinearFilter;
+    verticalBlurPass3.texture.magFilter = THREE.LinearFilter;
+    verticalBlurPass3.texture.format = THREE.RGBAFormat;
 
     const compositePassMaterial = new THREE.ShaderMaterial({
         vertexShader: shaderData.planeVertex,
         fragmentShader: shaderData.compositePassFragment,
+        blending: THREE.AdditiveBlending,
         uniforms: {
             colorPassTexture: {
                 value: null,
             },
-            blurBuffer0: {
+            colorBuffer1: {
                 value: null,
             },
-            blurBuffer1: {
+            colorBuffer2: {
                 value: null,
             },
-            blurBuffer2: {
-                value: null,
-            },
-            blurBuffer3: {
-                value: null,
-            },
-            blurBuffer4: {
-                value: null,
-            },
-            blurBuffer5: {
-                value: null,
-            },
-            compositePass: {
+            colorBuffer3: {
                 value: null,
             },
         },
@@ -353,6 +376,56 @@ const init = async () => {
     postScene.add(compositePassMesh);
 
     compositePass = new THREE.WebGLRenderTarget(container.clientWidth, container.clientHeight);
+
+    // sub scene
+    // subScene = new THREE.Scene();
+    // subCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+    // buffers[0] = {};
+    // buffers[0].renderTarget = colorPassTarget;
+    // buffers[0].geometry = passPlane;
+    // buffers[0].material = colorPassMaterial;
+    // buffers[0].mesh = {};
+    // buffers[0].domElement = 'colorPass';
+    // buffers[1] = {};
+    // buffers[1].renderTarget = brightnessPass;
+    // buffers[1].geometry = passPlane;
+    // buffers[1].material = brightnessPassMaterial;
+    // buffers[1].mesh = {};
+    // buffers[1].domElement = 'brightnessPass';
+    // buffers[2] = {};
+    // buffers[2].renderTarget = horizontalBlurPass;
+    // buffers[2].geometry = passPlane;
+    // buffers[2].material = horizontalPassMaterial;
+    // buffers[2].mesh = {};
+    // buffers[2].domElement = 'horizontalPass';
+
+    // const wrapperElement = document.createElement('ul');
+    // wrapperElement.setAttribute('class', 'bufferWrapper');
+    // document.body.insertAdjacentElement('afterbegin', wrapperElement);
+
+    // for (let i = 0; i < buffers.length; i += 1) {
+    //     const buffer = buffers[i];
+
+    //     const elementWidth = container.clientWidth / 8;
+    //     const elementHeight = container.clientHeight / 8;
+
+    //     const listElement = document.createElement('li');
+    //     listElement.setAttribute('class', 'bufferItem');
+    //     listElement.setAttribute('width', String(elementWidth));
+    //     listElement.setAttribute('height', String(elementHeight));
+
+    //     wrapperElement.insertAdjacentElement('beforeend', listElement);
+
+    //     buffer.renderer = new THREE.WebGLRenderer();
+    //     buffer.renderer.setPixelRatio(1);
+    //     buffer.renderer.setSize(elementWidth, elementHeight);
+    //     listElement.appendChild(buffer.renderer.domElement);
+
+    //     buffer.mesh = new THREE.Mesh(buffer.geometry.clone(), buffer.material.clone());
+
+    //     subScene.add(buffer.mesh);
+    // }
 
     window.addEventListener('resize', () => onWindowResize(baseCamera, renderer), false);
 };
@@ -495,19 +568,34 @@ const animate = () => {
     compositePassMesh.visible = true;
 
     compositePassMesh.material.uniforms.colorPassTexture.value = colorPassTarget.texture;
-    compositePassMesh.material.uniforms.blurBuffer0.value = horizontalBlurPass.texture;
-    compositePassMesh.material.uniforms.blurBuffer1.value = verticalBlurPass.texture;
-    compositePassMesh.material.uniforms.blurBuffer2.value = horizontalBlurPass2.texture;
-    compositePassMesh.material.uniforms.blurBuffer3.value = verticalBlurPass2.texture;
-    compositePassMesh.material.uniforms.blurBuffer4.value = horizontalBlurPass3.texture;
-    compositePassMesh.material.uniforms.blurBuffer5.value = verticalBlurPass3.texture;
-    // compositePassMesh.material.uniforms.compositePass.value = compositePass.texture;
+    compositePassMesh.material.uniforms.colorBuffer1.value = horizontalBlurPass2.texture;
+    compositePassMesh.material.uniforms.colorBuffer2.value = horizontalBlurPass3.texture;
+    compositePassMesh.material.uniforms.colorBuffer3.value = compositePass.texture;
 
     renderer.setRenderTarget(null);
     renderer.render(postScene, postCamera);
 };
 
+const subAnimate = () => {
+    requestAnimationFrame(subAnimate);
+
+    for (let i = 0; i < buffers.length; i += 1) {
+        const buffer = buffers[i];
+
+        buffer.renderer.setRenderTarget(buffer.renderTarget);
+        buffer.renderer.render(baseScene, baseCamera);
+
+        buffer.mesh.material.uniforms.colorPassTexture.value = buffer.renderTarget.texture;
+
+        buffer.renderer.setRenderTarget(null);
+        buffer.renderer.render(subScene, subCamera);
+    }
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     await init();
+
     animate();
+
+    // subAnimate();
 });
