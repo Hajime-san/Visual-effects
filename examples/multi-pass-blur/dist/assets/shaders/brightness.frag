@@ -1,11 +1,11 @@
 varying vec2 vUv;
 
-uniform sampler2D colorPassTexture;
+uniform sampler2D colorBuffer;
 uniform float thresHold;
 
 void main() {
 
-    vec4 scene = texture2D( colorPassTexture, vUv );
+    vec4 scene = texture2D( colorBuffer, vUv );
 
     vec3 pick = step( vec3( thresHold ), scene.rgb );
 
