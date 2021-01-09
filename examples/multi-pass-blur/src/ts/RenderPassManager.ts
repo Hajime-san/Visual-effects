@@ -16,6 +16,12 @@ type RenderPassOptions = {
     vertexShader?: string;
 };
 
+/**
+ *
+ *
+ * @export
+ * @class RenderPassManager
+ */
 export class RenderPassManager {
     private renderer: THREE.WebGLRenderer;
 
@@ -49,8 +55,16 @@ export class RenderPassManager {
         this.renderTargets = new Map();
     }
 
+    /**
+     *
+     *
+     * @param {string} renderPassName
+     * @param {RenderPassOptions} renderPassOptions If you want to send buffer to fragmentShader via uniform variable, you must name it like {foo}Buffer.
+     * And if you use multi buffer in a renderTarget, you must put unform variable name it at first key
+     * @memberof RenderPassManager
+     */
     public async createRenderPass(renderPassName: string, renderPassOptions: RenderPassOptions) {
-        if (typeof renderPassOptions.vertexShader === 'undefined' && typeof this.passPlaneVertexShader === 'undefined') {
+        if (typeof this.passPlaneVertexShader === 'undefined' && typeof renderPassOptions.vertexShader === 'undefined') {
             const shaderData = await loadShaders([{ key: 'planeVertex', path: './assets/shaders/plane.vert' }]);
             this.passPlaneVertexShader = shaderData.planeVertex;
         }
@@ -79,28 +93,28 @@ export class RenderPassManager {
     }
 
     private animate() {
-        this.renderPassPool.forEach((value, key) => {
+        this.renderPassPool.forEach((value, index) => {
             // render base scene
-            if (key === 0) {
+            if (index === 0) {
                 this.renderer.setRenderTarget(value.renderTarget);
                 this.renderer.render(this.baseScene, this.baseCamera);
             }
 
             // render post processing scene
-            if (key > 0) {
+            if (index > 0) {
                 this.renderer.setRenderTarget(value.renderTarget);
                 this.renderer.render(this.postScene, this.postCamera);
             }
 
             // hide result pass mesh
-            if (key === 0) {
+            if (index === 0) {
                 const renderResultPassObject = this.renderPassPool.get(this.renderPassPool.size - 1);
                 renderResultPassObject.mesh.visible = false;
             }
 
             // hide previous pass mesh
-            if (key > 0) {
-                const previousRenderPassObject = this.renderPassPool.get(key - 1);
+            if (index > 0) {
+                const previousRenderPassObject = this.renderPassPool.get(index - 1);
                 previousRenderPassObject.mesh.visible = false;
             }
 
@@ -113,9 +127,8 @@ export class RenderPassManager {
             Object.keys(value.mesh.material.uniforms).forEach(uniformKey => {
                 if (uniformKey.match(/Buffer/)) {
                     if (bufferCount > 0) {
-                        const pass = this.renderTargets.get(uniformKey);
-
-                        value.mesh.material.uniforms[uniformKey].value = pass.texture;
+                        const renderPass = this.renderTargets.get(uniformKey);
+                        value.mesh.material.uniforms[uniformKey].value = renderPass.texture;
                     } else {
                         value.mesh.material.uniforms[uniformKey].value = value.renderTarget.texture;
                     }
@@ -125,7 +138,7 @@ export class RenderPassManager {
             });
 
             // render final result
-            if (key === this.renderPassPool.size - 1) {
+            if (index === this.renderPassPool.size - 1) {
                 this.renderer.setRenderTarget(null);
                 this.renderer.render(this.postScene, this.postCamera);
             }
