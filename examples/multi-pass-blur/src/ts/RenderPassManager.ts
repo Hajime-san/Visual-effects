@@ -61,13 +61,12 @@ export class RenderPassManager {
 
     /**
      *
-     *
+     * Add render pass to RenderPassManager
      * @param {string} renderPassName
-     * @param {RenderPassOptions} renderPassOptions If you want to send buffer to fragmentShader via uniform variable, you must name it like {foo}Buffer.
-     * And if you use multi buffer in a renderTarget, you must put unform variable name it at first key
+     * @param {Object} renderPassOptions.renderTargetRelation - you must set pare of RenderTarget and its uniform variable key
      * @memberof RenderPassManager
      */
-    public async createRenderPass(renderPassName: string, renderPassOptions: RenderPassOptions) {
+    public async addRenderPass(renderPassName: string, renderPassOptions: RenderPassOptions) {
         if (typeof this.passPlaneVertexShader === 'undefined' && typeof renderPassOptions.vertexShader === 'undefined') {
             const shaderData = await loadShaders([{ key: 'planeVertex', path: './assets/shaders/plane.vert' }]);
             this.passPlaneVertexShader = shaderData.planeVertex;

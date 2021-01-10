@@ -189,12 +189,12 @@ const init = async () => {
 
     renderPassManager = new RenderPassManager(renderer, baseScene, baseCamera);
 
-    await renderPassManager.createRenderPass('colorBuffer', {
+    await renderPassManager.addRenderPass('colorBuffer', {
         renderTargetRelation: [{ renderTarget: colorBuffer, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.colorFragment,
     });
 
-    await renderPassManager.createRenderPass('brightnessPass', {
+    await renderPassManager.addRenderPass('brightnessPass', {
         renderTargetRelation: [{ renderTarget: brightnessPass, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.brightnessFragment,
         uniforms: {
@@ -204,7 +204,7 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.createRenderPass('horizontalBlurPass', {
+    await renderPassManager.addRenderPass('horizontalBlurPass', {
         renderTargetRelation: [{ renderTarget: horizontalBlurPass, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
@@ -214,7 +214,7 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.createRenderPass('verticalBlurPass', {
+    await renderPassManager.addRenderPass('verticalBlurPass', {
         renderTargetRelation: [{ renderTarget: verticalBlurPass, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
@@ -224,7 +224,7 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.createRenderPass('colorBuffer2', {
+    await renderPassManager.addRenderPass('colorBuffer2', {
         renderTargetRelation: [{ renderTarget: colorBuffer2, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
@@ -234,7 +234,7 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.createRenderPass('verticalBlurPass2', {
+    await renderPassManager.addRenderPass('verticalBlurPass2', {
         renderTargetRelation: [{ renderTarget: verticalBlurPass2, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
@@ -244,7 +244,7 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.createRenderPass('colorBuffer3', {
+    await renderPassManager.addRenderPass('colorBuffer3', {
         renderTargetRelation: [{ renderTarget: colorBuffer3, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
@@ -254,7 +254,7 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.createRenderPass('verticalBlurPass3', {
+    await renderPassManager.addRenderPass('verticalBlurPass3', {
         renderTargetRelation: [{ renderTarget: verticalBlurPass3, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
@@ -264,7 +264,7 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.createRenderPass('compositeBuffer', {
+    await renderPassManager.addRenderPass('compositeBuffer', {
         renderTargetRelation: [
             { renderTarget: colorBuffer, uniformKeyName: 'colorBuffer' },
             { renderTarget: colorBuffer2, uniformKeyName: 'colorBuffer2' },
