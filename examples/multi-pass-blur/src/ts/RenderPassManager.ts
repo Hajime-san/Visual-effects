@@ -1,8 +1,15 @@
 import * as THREE from 'three';
 import { loadShaders } from '../../../modules/Util';
 
-type RenderPassContext = {
+type RenderTargetRelation = {
     renderTarget: THREE.WebGLRenderTarget;
+    uniformKeyName: string;
+    actualRenderTarget?: boolean;
+};
+
+type RenderPassContext = {
+    actualRenderTarget: THREE.WebGLRenderTarget;
+    renderTargetRelation: Array<RenderTargetRelation>;
     mesh: THREE.Mesh<THREE.PlaneBufferGeometry, THREE.ShaderMaterial>;
     renderPassName: string;
 };
@@ -10,9 +17,9 @@ type RenderPassContext = {
 type RenderPassMap = Map<number, RenderPassContext>;
 
 type RenderPassOptions = {
-    renderTarget: THREE.WebGLRenderTarget;
-    uniforms: { [uniform: string]: THREE.IUniform };
+    renderTargetRelation: Array<RenderTargetRelation>;
     fragmentShader: string;
+    uniforms?: { [uniform: string]: THREE.IUniform };
     vertexShader?: string;
 };
 
@@ -41,8 +48,6 @@ export class RenderPassManager {
 
     private renderPassCount: number;
 
-    private renderTargets: Map<string, THREE.WebGLRenderTarget>;
-
     constructor(renderer: THREE.WebGLRenderer, baseScene: THREE.Scene, baseCamera: THREE.PerspectiveCamera | THREE.OrthographicCamera) {
         this.renderer = renderer;
         this.baseScene = baseScene;
@@ -52,7 +57,6 @@ export class RenderPassManager {
         this.passPlaneGeometry = new THREE.PlaneBufferGeometry(2, 2);
         this.renderPassPool = new Map();
         this.renderPassCount = 0;
-        this.renderTargets = new Map();
     }
 
     /**
@@ -69,14 +73,38 @@ export class RenderPassManager {
             this.passPlaneVertexShader = shaderData.planeVertex;
         }
 
+        let actualRenderTarget = null;
+
+        for (let index = 0; index < renderPassOptions.renderTargetRelation.length; index += 1) {
+            const item = renderPassOptions.renderTargetRelation[index];
+            if (item.actualRenderTarget) {
+                actualRenderTarget = item.renderTarget;
+            }
+        }
+
+        const uniformObj: { [uniform: string]: THREE.IUniform } = {};
+
+        const bufferUniforms = renderPassOptions.renderTargetRelation.map(value => {
+            const key = value.uniformKeyName;
+            uniformObj[key] = {
+                value: null,
+            };
+            return uniformObj;
+        })[0];
+
+        const otherUniforms = renderPassOptions.uniforms ? renderPassOptions.uniforms : {};
+
+        const mergedUniforms = Object.assign(bufferUniforms, otherUniforms);
+
         const material = new THREE.ShaderMaterial({
             vertexShader: renderPassOptions.vertexShader ? renderPassOptions.vertexShader : this.passPlaneVertexShader,
             fragmentShader: renderPassOptions.fragmentShader,
-            uniforms: renderPassOptions.uniforms,
+            uniforms: mergedUniforms,
         });
 
         const renderPass: RenderPassContext = {
-            renderTarget: renderPassOptions.renderTarget,
+            actualRenderTarget: actualRenderTarget,
+            renderTargetRelation: renderPassOptions.renderTargetRelation,
             mesh: new THREE.Mesh(this.passPlaneGeometry, material),
             renderPassName: renderPassName,
         };
@@ -88,27 +116,28 @@ export class RenderPassManager {
         this.renderPassPool.set(this.renderPassCount, renderPass);
 
         this.renderPassCount += 1;
-
-        this.renderTargets.set(renderPassName, renderPassOptions.renderTarget);
     }
 
     private animate() {
         this.renderPassPool.forEach((value, index) => {
+
+            const lastRenderPassIndex = this.renderPassPool.size - 1;
+
             // render base scene
             if (index === 0) {
-                this.renderer.setRenderTarget(value.renderTarget);
+                this.renderer.setRenderTarget(value.actualRenderTarget);
                 this.renderer.render(this.baseScene, this.baseCamera);
             }
 
             // render post processing scene
             if (index > 0) {
-                this.renderer.setRenderTarget(value.renderTarget);
+                this.renderer.setRenderTarget(value.actualRenderTarget);
                 this.renderer.render(this.postScene, this.postCamera);
             }
 
             // hide result pass mesh
             if (index === 0) {
-                const renderResultPassObject = this.renderPassPool.get(this.renderPassPool.size - 1);
+                const renderResultPassObject = this.renderPassPool.get(lastRenderPassIndex);
                 renderResultPassObject.mesh.visible = false;
             }
 
@@ -121,24 +150,13 @@ export class RenderPassManager {
             // visible current pass mesh
             value.mesh.visible = true;
 
-            let bufferCount = 0;
-
             // set buffer texture to uniform variable
-            Object.keys(value.mesh.material.uniforms).forEach(uniformKey => {
-                if (uniformKey.match(/Buffer/)) {
-                    if (bufferCount > 0) {
-                        const renderPass = this.renderTargets.get(uniformKey);
-                        value.mesh.material.uniforms[uniformKey].value = renderPass.texture;
-                    } else {
-                        value.mesh.material.uniforms[uniformKey].value = value.renderTarget.texture;
-                    }
-
-                    bufferCount += 1;
-                }
+            Object.values(value.renderTargetRelation).forEach(renderTargetRelation => {
+                value.mesh.material.uniforms[renderTargetRelation.uniformKeyName].value = renderTargetRelation.renderTarget.texture;
             });
 
             // render final result
-            if (index === this.renderPassPool.size - 1) {
+            if (index === lastRenderPassIndex) {
                 this.renderer.setRenderTarget(null);
                 this.renderer.render(this.postScene, this.postCamera);
             }

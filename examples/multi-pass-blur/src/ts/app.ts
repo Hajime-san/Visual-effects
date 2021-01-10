@@ -76,10 +76,10 @@ const CalcBlurParam = (width: number, height: number, dir: THREE.Vector2, deviat
 const init = async () => {
     // dat GUI
     const parameters = new GuiUniforms();
-    const gui = new dat.GUI();
-    gui.add(parameters, 'brightnessThresHold', 0.0, 1.0).onChange(() => {
-        brightnessPassMesh.material.uniforms.thresHold.value = parameters.brightnessThresHold;
-    });
+    // const gui = new dat.GUI();
+    // gui.add(parameters, 'brightnessThresHold', 0.0, 1.0).onChange(() => {
+    //     brightnessPassMesh.material.uniforms.thresHold.value = parameters.brightnessThresHold;
+    // });
 
     // intial settings
     const container = document.getElementById('canvas');
@@ -190,22 +190,14 @@ const init = async () => {
     renderPassManager = new RenderPassManager(renderer, baseScene, baseCamera);
 
     await renderPassManager.createRenderPass('colorBuffer', {
-        renderTarget: colorBuffer,
+        renderTargetRelation: [{ renderTarget: colorBuffer, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.colorFragment,
-        uniforms: {
-            colorBuffer: {
-                value: null,
-            },
-        },
     });
 
     await renderPassManager.createRenderPass('brightnessPass', {
-        renderTarget: brightnessPass,
+        renderTargetRelation: [{ renderTarget: brightnessPass, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.brightnessFragment,
         uniforms: {
-            colorBuffer: {
-                value: null,
-            },
             thresHold: {
                 value: parameters.brightnessThresHold,
             },
@@ -213,12 +205,9 @@ const init = async () => {
     });
 
     await renderPassManager.createRenderPass('horizontalBlurPass', {
-        renderTarget: horizontalBlurPass,
+        renderTargetRelation: [{ renderTarget: horizontalBlurPass, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
-            colorBuffer: {
-                value: null,
-            },
             deviation: {
                 value: blurX.offset,
             },
@@ -226,12 +215,9 @@ const init = async () => {
     });
 
     await renderPassManager.createRenderPass('verticalBlurPass', {
-        renderTarget: verticalBlurPass,
+        renderTargetRelation: [{ renderTarget: verticalBlurPass, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
-            colorBuffer: {
-                value: null,
-            },
             deviation: {
                 value: blurY.offset,
             },
@@ -239,12 +225,9 @@ const init = async () => {
     });
 
     await renderPassManager.createRenderPass('colorBuffer2', {
-        renderTarget: colorBuffer2,
+        renderTargetRelation: [{ renderTarget: colorBuffer2, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
-            colorBuffer: {
-                value: null,
-            },
             deviation: {
                 value: blurX2.offset,
             },
@@ -252,12 +235,9 @@ const init = async () => {
     });
 
     await renderPassManager.createRenderPass('verticalBlurPass2', {
-        renderTarget: verticalBlurPass2,
+        renderTargetRelation: [{ renderTarget: verticalBlurPass2, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
-            colorBuffer: {
-                value: null,
-            },
             deviation: {
                 value: blurY2.offset,
             },
@@ -265,12 +245,9 @@ const init = async () => {
     });
 
     await renderPassManager.createRenderPass('colorBuffer3', {
-        renderTarget: colorBuffer3,
+        renderTargetRelation: [{ renderTarget: colorBuffer3, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
-            colorBuffer: {
-                value: null,
-            },
             deviation: {
                 value: blurX3.offset,
             },
@@ -278,12 +255,9 @@ const init = async () => {
     });
 
     await renderPassManager.createRenderPass('verticalBlurPass3', {
-        renderTarget: verticalBlurPass3,
+        renderTargetRelation: [{ renderTarget: verticalBlurPass3, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
-            colorBuffer: {
-                value: null,
-            },
             deviation: {
                 value: blurY3.offset,
             },
@@ -291,22 +265,13 @@ const init = async () => {
     });
 
     await renderPassManager.createRenderPass('compositeBuffer', {
-        renderTarget: compositeBuffer,
+        renderTargetRelation: [
+            { renderTarget: colorBuffer, uniformKeyName: 'colorBuffer' },
+            { renderTarget: colorBuffer2, uniformKeyName: 'colorBuffer2' },
+            { renderTarget: colorBuffer3, uniformKeyName: 'colorBuffer3' },
+            { renderTarget: compositeBuffer, uniformKeyName: 'compositeBuffer', actualRenderTarget: true },
+        ],
         fragmentShader: shaderData.compositePassFragment,
-        uniforms: {
-            compositeBuffer: {
-                value: null,
-            },
-            colorBuffer: {
-                value: null,
-            },
-            colorBuffer2: {
-                value: null,
-            },
-            colorBuffer3: {
-                value: null,
-            },
-        },
     });
 
     window.addEventListener('resize', () => onWindowResize(baseCamera, renderer), false);
@@ -373,149 +338,149 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // const animate = () => {
-    // requestAnimationFrame(animate);
+// requestAnimationFrame(animate);
 
-    // render color pass
-    // renderer.setRenderTarget(colorPass);
-    // renderer.render(baseScene, baseCamera);
+// render color pass
+// renderer.setRenderTarget(colorPass);
+// renderer.render(baseScene, baseCamera);
 
-    // colorPassMesh.visible = true;
-    // brightnessPassMesh.visible = false;
-    // horizontalBlurPassMesh.visible = false;
-    // verticalBlurPassMesh.visible = false;
-    // horizontalBlurPassMesh2.visible = false;
-    // verticalBlurPassMesh2.visible = false;
-    // horizontalBlurPassMesh3.visible = false;
-    // verticalBlurPassMesh3.visible = false;
-    // compositePassMesh.visible = false;
+// colorPassMesh.visible = true;
+// brightnessPassMesh.visible = false;
+// horizontalBlurPassMesh.visible = false;
+// verticalBlurPassMesh.visible = false;
+// horizontalBlurPassMesh2.visible = false;
+// verticalBlurPassMesh2.visible = false;
+// horizontalBlurPassMesh3.visible = false;
+// verticalBlurPassMesh3.visible = false;
+// compositePassMesh.visible = false;
 
-    // colorPassMesh.material.uniforms.colorPass.value = colorPass.texture;
+// colorPassMesh.material.uniforms.colorPass.value = colorPass.texture;
 
-    // renderer.setRenderTarget(brightnessPass);
-    // renderer.render(postScene, postCamera);
+// renderer.setRenderTarget(brightnessPass);
+// renderer.render(postScene, postCamera);
 
-    // colorPassMesh.visible = false;
-    // brightnessPassMesh.visible = true;
-    // horizontalBlurPassMesh.visible = false;
-    // verticalBlurPassMesh.visible = false;
-    // horizontalBlurPassMesh2.visible = false;
-    // verticalBlurPassMesh2.visible = false;
-    // horizontalBlurPassMesh3.visible = false;
-    // verticalBlurPassMesh3.visible = false;
-    // compositePassMesh.visible = false;
+// colorPassMesh.visible = false;
+// brightnessPassMesh.visible = true;
+// horizontalBlurPassMesh.visible = false;
+// verticalBlurPassMesh.visible = false;
+// horizontalBlurPassMesh2.visible = false;
+// verticalBlurPassMesh2.visible = false;
+// horizontalBlurPassMesh3.visible = false;
+// verticalBlurPassMesh3.visible = false;
+// compositePassMesh.visible = false;
 
-    // brightnessPassMesh.material.uniforms.colorPassTexture.value = brightnessPass.texture;
+// brightnessPassMesh.material.uniforms.colorPassTexture.value = brightnessPass.texture;
 
-    // renderer.setRenderTarget(horizontalBlurPass);
-    // renderer.render(postScene, postCamera);
+// renderer.setRenderTarget(horizontalBlurPass);
+// renderer.render(postScene, postCamera);
 
-    // colorPassMesh.visible = false;
-    // brightnessPassMesh.visible = false;
-    // horizontalBlurPassMesh.visible = true;
-    // verticalBlurPassMesh.visible = false;
-    // horizontalBlurPassMesh2.visible = false;
-    // verticalBlurPassMesh2.visible = false;
-    // horizontalBlurPassMesh3.visible = false;
-    // verticalBlurPassMesh3.visible = false;
-    // compositePassMesh.visible = false;
+// colorPassMesh.visible = false;
+// brightnessPassMesh.visible = false;
+// horizontalBlurPassMesh.visible = true;
+// verticalBlurPassMesh.visible = false;
+// horizontalBlurPassMesh2.visible = false;
+// verticalBlurPassMesh2.visible = false;
+// horizontalBlurPassMesh3.visible = false;
+// verticalBlurPassMesh3.visible = false;
+// compositePassMesh.visible = false;
 
-    // horizontalBlurPassMesh.material.uniforms.blurPass.value = horizontalBlurPass.texture;
+// horizontalBlurPassMesh.material.uniforms.blurPass.value = horizontalBlurPass.texture;
 
-    // renderer.setRenderTarget(verticalBlurPass);
-    // renderer.render(postScene, postCamera);
+// renderer.setRenderTarget(verticalBlurPass);
+// renderer.render(postScene, postCamera);
 
-    // colorPassMesh.visible = false;
-    // brightnessPassMesh.visible = false;
-    // horizontalBlurPassMesh.visible = false;
-    // verticalBlurPassMesh.visible = true;
-    // horizontalBlurPassMesh2.visible = false;
-    // verticalBlurPassMesh2.visible = false;
-    // horizontalBlurPassMesh3.visible = false;
-    // verticalBlurPassMesh3.visible = false;
-    // compositePassMesh.visible = false;
+// colorPassMesh.visible = false;
+// brightnessPassMesh.visible = false;
+// horizontalBlurPassMesh.visible = false;
+// verticalBlurPassMesh.visible = true;
+// horizontalBlurPassMesh2.visible = false;
+// verticalBlurPassMesh2.visible = false;
+// horizontalBlurPassMesh3.visible = false;
+// verticalBlurPassMesh3.visible = false;
+// compositePassMesh.visible = false;
 
-    // verticalBlurPassMesh.material.uniforms.blurPass.value = verticalBlurPass.texture;
+// verticalBlurPassMesh.material.uniforms.blurPass.value = verticalBlurPass.texture;
 
-    // renderer.setRenderTarget(horizontalBlurPass2);
-    // renderer.render(postScene, postCamera);
+// renderer.setRenderTarget(horizontalBlurPass2);
+// renderer.render(postScene, postCamera);
 
-    // colorPassMesh.visible = false;
-    // brightnessPassMesh.visible = false;
-    // horizontalBlurPassMesh.visible = false;
-    // verticalBlurPassMesh.visible = false;
-    // horizontalBlurPassMesh2.visible = true;
-    // verticalBlurPassMesh2.visible = false;
-    // horizontalBlurPassMesh3.visible = false;
-    // verticalBlurPassMesh3.visible = false;
-    // compositePassMesh.visible = false;
+// colorPassMesh.visible = false;
+// brightnessPassMesh.visible = false;
+// horizontalBlurPassMesh.visible = false;
+// verticalBlurPassMesh.visible = false;
+// horizontalBlurPassMesh2.visible = true;
+// verticalBlurPassMesh2.visible = false;
+// horizontalBlurPassMesh3.visible = false;
+// verticalBlurPassMesh3.visible = false;
+// compositePassMesh.visible = false;
 
-    // horizontalBlurPassMesh2.material.uniforms.blurPass.value = horizontalBlurPass2.texture;
+// horizontalBlurPassMesh2.material.uniforms.blurPass.value = horizontalBlurPass2.texture;
 
-    // renderer.setRenderTarget(verticalBlurPass2);
-    // renderer.render(postScene, postCamera);
+// renderer.setRenderTarget(verticalBlurPass2);
+// renderer.render(postScene, postCamera);
 
-    // colorPassMesh.visible = false;
-    // brightnessPassMesh.visible = false;
-    // horizontalBlurPassMesh.visible = false;
-    // verticalBlurPassMesh.visible = false;
-    // horizontalBlurPassMesh2.visible = false;
-    // verticalBlurPassMesh2.visible = true;
-    // horizontalBlurPassMesh3.visible = false;
-    // verticalBlurPassMesh3.visible = false;
-    // compositePassMesh.visible = false;
+// colorPassMesh.visible = false;
+// brightnessPassMesh.visible = false;
+// horizontalBlurPassMesh.visible = false;
+// verticalBlurPassMesh.visible = false;
+// horizontalBlurPassMesh2.visible = false;
+// verticalBlurPassMesh2.visible = true;
+// horizontalBlurPassMesh3.visible = false;
+// verticalBlurPassMesh3.visible = false;
+// compositePassMesh.visible = false;
 
-    // verticalBlurPassMesh2.material.uniforms.blurPass.value = verticalBlurPass2.texture;
+// verticalBlurPassMesh2.material.uniforms.blurPass.value = verticalBlurPass2.texture;
 
-    // renderer.setRenderTarget(horizontalBlurPass3);
-    // renderer.render(postScene, postCamera);
+// renderer.setRenderTarget(horizontalBlurPass3);
+// renderer.render(postScene, postCamera);
 
-    // colorPassMesh.visible = false;
-    // brightnessPassMesh.visible = false;
-    // horizontalBlurPassMesh.visible = false;
-    // verticalBlurPassMesh.visible = false;
-    // horizontalBlurPassMesh2.visible = false;
-    // verticalBlurPassMesh2.visible = false;
-    // horizontalBlurPassMesh3.visible = true;
-    // verticalBlurPassMesh3.visible = false;
-    // compositePassMesh.visible = false;
+// colorPassMesh.visible = false;
+// brightnessPassMesh.visible = false;
+// horizontalBlurPassMesh.visible = false;
+// verticalBlurPassMesh.visible = false;
+// horizontalBlurPassMesh2.visible = false;
+// verticalBlurPassMesh2.visible = false;
+// horizontalBlurPassMesh3.visible = true;
+// verticalBlurPassMesh3.visible = false;
+// compositePassMesh.visible = false;
 
-    // horizontalBlurPassMesh3.material.uniforms.blurPass.value = horizontalBlurPass3.texture;
+// horizontalBlurPassMesh3.material.uniforms.blurPass.value = horizontalBlurPass3.texture;
 
-    // renderer.setRenderTarget(verticalBlurPass3);
-    // renderer.render(postScene, postCamera);
+// renderer.setRenderTarget(verticalBlurPass3);
+// renderer.render(postScene, postCamera);
 
-    // colorPassMesh.visible = false;
-    // brightnessPassMesh.visible = false;
-    // horizontalBlurPassMesh.visible = false;
-    // verticalBlurPassMesh.visible = false;
-    // horizontalBlurPassMesh2.visible = false;
-    // verticalBlurPassMesh2.visible = false;
-    // horizontalBlurPassMesh3.visible = false;
-    // verticalBlurPassMesh3.visible = true;
-    // compositePassMesh.visible = false;
+// colorPassMesh.visible = false;
+// brightnessPassMesh.visible = false;
+// horizontalBlurPassMesh.visible = false;
+// verticalBlurPassMesh.visible = false;
+// horizontalBlurPassMesh2.visible = false;
+// verticalBlurPassMesh2.visible = false;
+// horizontalBlurPassMesh3.visible = false;
+// verticalBlurPassMesh3.visible = true;
+// compositePassMesh.visible = false;
 
-    // verticalBlurPassMesh3.material.uniforms.blurPass.value = verticalBlurPass3.texture;
+// verticalBlurPassMesh3.material.uniforms.blurPass.value = verticalBlurPass3.texture;
 
-    // renderer.setRenderTarget(compositePass);
-    // renderer.render(postScene, postCamera);
+// renderer.setRenderTarget(compositePass);
+// renderer.render(postScene, postCamera);
 
-    // colorPassMesh.visible = false;
-    // brightnessPassMesh.visible = false;
-    // horizontalBlurPassMesh.visible = false;
-    // verticalBlurPassMesh.visible = false;
-    // horizontalBlurPassMesh2.visible = false;
-    // verticalBlurPassMesh2.visible = false;
-    // horizontalBlurPassMesh3.visible = false;
-    // verticalBlurPassMesh3.visible = false;
-    // compositePassMesh.visible = true;
+// colorPassMesh.visible = false;
+// brightnessPassMesh.visible = false;
+// horizontalBlurPassMesh.visible = false;
+// verticalBlurPassMesh.visible = false;
+// horizontalBlurPassMesh2.visible = false;
+// verticalBlurPassMesh2.visible = false;
+// horizontalBlurPassMesh3.visible = false;
+// verticalBlurPassMesh3.visible = false;
+// compositePassMesh.visible = true;
 
-    // compositePassMesh.material.uniforms.colorPassTexture.value = colorPass.texture;
-    // compositePassMesh.material.uniforms.colorBuffer1.value = horizontalBlurPass2.texture;
-    // compositePassMesh.material.uniforms.colorBuffer2.value = horizontalBlurPass3.texture;
-    // compositePassMesh.material.uniforms.colorBuffer3.value = compositePass.texture;
+// compositePassMesh.material.uniforms.colorPassTexture.value = colorPass.texture;
+// compositePassMesh.material.uniforms.colorBuffer1.value = horizontalBlurPass2.texture;
+// compositePassMesh.material.uniforms.colorBuffer2.value = horizontalBlurPass3.texture;
+// compositePassMesh.material.uniforms.colorBuffer3.value = compositePass.texture;
 
-    // renderer.setRenderTarget(null);
-    // renderer.render(postScene, postCamera);
+// renderer.setRenderTarget(null);
+// renderer.render(postScene, postCamera);
 // };
 
 // const subAnimate = () => {
