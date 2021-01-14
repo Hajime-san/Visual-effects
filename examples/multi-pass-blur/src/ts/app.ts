@@ -171,7 +171,7 @@ const init = async () => {
 
     const blurX2 = CalcBlurParam(blurPassWidth / 2.0, blurPassHeight / 2.0, new THREE.Vector2(1.0, 0.0), deviation, 4.0);
 
-    const colorBuffer2 = new THREE.WebGLRenderTarget(blurPassWidth / 2.0, blurPassHeight / 2.0);
+    const horizontalBlurPass2 = new THREE.WebGLRenderTarget(blurPassWidth / 2.0, blurPassHeight / 2.0);
 
     const blurY2 = CalcBlurParam(blurPassWidth / 2.0, blurPassHeight / 2.0, new THREE.Vector2(0.0, 1.0), deviation, 4.0);
 
@@ -179,7 +179,7 @@ const init = async () => {
 
     const blurX3 = CalcBlurParam(blurPassWidth / 4.0, blurPassHeight / 4.0, new THREE.Vector2(1.0, 0.0), deviation, 8.0);
 
-    const colorBuffer3 = new THREE.WebGLRenderTarget(blurPassWidth / 4.0, blurPassHeight / 4.0);
+    const horizontalBlurPass3 = new THREE.WebGLRenderTarget(blurPassWidth / 4.0, blurPassHeight / 4.0);
 
     const blurY3 = CalcBlurParam(blurPassWidth / 4.0, blurPassHeight / 4.0, new THREE.Vector2(0.0, 1.0), deviation, 8.0);
 
@@ -224,8 +224,8 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.addRenderPass('colorBuffer2', {
-        renderTargetRelation: [{ renderTarget: colorBuffer2, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
+    await renderPassManager.addRenderPass('horizontalBlurPass2', {
+        renderTargetRelation: [{ renderTarget: horizontalBlurPass2, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
             deviation: {
@@ -244,8 +244,8 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.addRenderPass('colorBuffer3', {
-        renderTargetRelation: [{ renderTarget: colorBuffer3, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
+    await renderPassManager.addRenderPass('horizontalBlurPass3', {
+        renderTargetRelation: [{ renderTarget: horizontalBlurPass3, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
             deviation: {
@@ -266,10 +266,10 @@ const init = async () => {
 
     await renderPassManager.addRenderPass('compositeBuffer', {
         renderTargetRelation: [
-            { renderTarget: colorBuffer, uniformKeyName: 'colorBuffer' },
-            { renderTarget: colorBuffer2, uniformKeyName: 'colorBuffer2' },
-            { renderTarget: colorBuffer3, uniformKeyName: 'colorBuffer3' },
-            { renderTarget: compositeBuffer, uniformKeyName: 'compositeBuffer', actualRenderTarget: true },
+            { renderTarget: colorBuffer, uniformKeyName: 'sceneBuffer' },
+            { renderTarget: horizontalBlurPass2, uniformKeyName: 'colorBuffer1' },
+            { renderTarget: horizontalBlurPass3, uniformKeyName: 'colorBuffer2' },
+            { renderTarget: compositeBuffer, uniformKeyName: 'colorBuffer3', actualRenderTarget: true },
         ],
         fragmentShader: shaderData.compositePassFragment,
     });

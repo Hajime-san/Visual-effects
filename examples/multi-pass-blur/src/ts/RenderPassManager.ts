@@ -119,7 +119,6 @@ export class RenderPassManager {
 
     private animate() {
         this.renderPassPool.forEach((value, index) => {
-
             const lastRenderPassIndex = this.renderPassPool.size - 1;
 
             // render base scene
@@ -166,5 +165,19 @@ export class RenderPassManager {
         this.animate();
 
         requestAnimationFrame(() => this.tick());
+    }
+
+    public getMeshByRenderPassName(renderPassName: string) {
+        let mesh: THREE.Mesh<THREE.PlaneBufferGeometry, THREE.ShaderMaterial> | Error = null;
+
+        this.renderPassPool.forEach(value => {
+            if (value.renderPassName === renderPassName) {
+                mesh = value.mesh;
+            } else {
+                mesh = new Error("can't find object.");
+            }
+        });
+
+        return mesh;
     }
 }
