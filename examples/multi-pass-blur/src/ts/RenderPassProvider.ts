@@ -27,9 +27,9 @@ type RenderPassOptions = {
  *
  *
  * @export
- * @class RenderPassManager
+ * @class RenderPassProvider
  */
-export class RenderPassManager {
+export class RenderPassProvider {
     private renderer: THREE.WebGLRenderer;
 
     private baseScene: THREE.Scene;
@@ -61,10 +61,10 @@ export class RenderPassManager {
 
     /**
      *
-     * Add render pass to RenderPassManager
+     * Add render pass to RenderPassProvider
      * @param {string} renderPassName
      * @param {Object} renderPassOptions.renderTargetRelation - you must set pare of RenderTarget and its uniform variable key
-     * @memberof RenderPassManager
+     * @memberof RenderPassProvider
      */
     public async addRenderPass(renderPassName: string, renderPassOptions: RenderPassOptions) {
         if (typeof this.passPlaneVertexShader === 'undefined' && typeof renderPassOptions.vertexShader === 'undefined') {
@@ -168,16 +168,26 @@ export class RenderPassManager {
     }
 
     public getMeshByRenderPassName(renderPassName: string) {
-        let mesh: THREE.Mesh<THREE.PlaneBufferGeometry, THREE.ShaderMaterial> | Error = null;
+        let mesh: THREE.Mesh<THREE.PlaneBufferGeometry, THREE.ShaderMaterial> = null;
 
         this.renderPassPool.forEach(value => {
             if (value.renderPassName === renderPassName) {
                 mesh = value.mesh;
-            } else {
-                mesh = new Error("can't find object.");
             }
         });
 
         return mesh;
+    }
+
+    public getBufferByRenderPassName(renderPassName: string) {
+        let buffer: THREE.WebGLRenderTarget = null;
+
+        this.renderPassPool.forEach(value => {
+            if (value.renderPassName === renderPassName) {
+                buffer = value.actualRenderTarget;
+            }
+        });
+
+        return buffer;
     }
 }

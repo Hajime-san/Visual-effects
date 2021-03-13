@@ -2,18 +2,17 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
 import { loadShaders, loadTexture, onWindowResize } from '../../../modules/Util';
-import { RenderPassManager } from './RenderPassManager';
+import { RenderPassProvider } from './RenderPassProvider';
 
 let baseCamera: THREE.PerspectiveCamera;
 let baseScene: THREE.Scene;
-let brightnessPassMesh: THREE.Mesh<THREE.PlaneBufferGeometry, THREE.ShaderMaterial>;
 let renderer: THREE.WebGLRenderer;
 let controls: OrbitControls;
-let renderPassManager: RenderPassManager;
+let renderPassProvider: RenderPassProvider;
 
-let subScene: THREE.Scene;
-let subCamera: THREE.OrthographicCamera;
-const buffers = [];
+// let subScene: THREE.Scene;
+// let subCamera: THREE.OrthographicCamera;
+// const buffers = [];
 
 class GuiUniforms {
     brightnessThresHold: number;
@@ -154,47 +153,53 @@ const init = async () => {
 
     const colorBuffer = new THREE.WebGLRenderTarget(container.clientWidth, container.clientHeight);
 
-    const blurPassWidth = container.clientWidth / 4.0;
-    const blurPassHeight = container.clientHeight / 4.0;
+    let blurPassWidth = container.clientWidth / 4.0;
+    let blurPassHeight = container.clientHeight / 4.0;
 
     const brightnessPass = new THREE.WebGLRenderTarget(blurPassWidth, blurPassHeight);
 
     const deviation = 50;
 
-    const blurX = CalcBlurParam(blurPassWidth, blurPassHeight, new THREE.Vector2(1.0, 0.0), deviation, 2.0);
+    let blurX = CalcBlurParam(blurPassWidth, blurPassHeight, new THREE.Vector2(1.0, 0.0), deviation, 2.0);
 
     const horizontalBlurPass = new THREE.WebGLRenderTarget(blurPassWidth, blurPassHeight);
 
-    const blurY = CalcBlurParam(blurPassWidth, blurPassHeight, new THREE.Vector2(0.0, 1.0), deviation, 2.0);
+    let blurY = CalcBlurParam(blurPassWidth, blurPassHeight, new THREE.Vector2(0.0, 1.0), deviation, 2.0);
 
     const verticalBlurPass = new THREE.WebGLRenderTarget(blurPassWidth, blurPassHeight);
 
-    const blurX2 = CalcBlurParam(blurPassWidth / 2.0, blurPassHeight / 2.0, new THREE.Vector2(1.0, 0.0), deviation, 4.0);
+    let blurPassHalfWidth = blurPassWidth / 2.0;
+    let blurPassHalfHeight = blurPassHeight / 2.0;
 
-    const horizontalBlurPass2 = new THREE.WebGLRenderTarget(blurPassWidth / 2.0, blurPassHeight / 2.0);
+    let blurX2 = CalcBlurParam(blurPassHalfWidth, blurPassHalfHeight, new THREE.Vector2(1.0, 0.0), deviation, 4.0);
 
-    const blurY2 = CalcBlurParam(blurPassWidth / 2.0, blurPassHeight / 2.0, new THREE.Vector2(0.0, 1.0), deviation, 4.0);
+    const horizontalBlurPass2 = new THREE.WebGLRenderTarget(blurPassHalfWidth, blurPassHalfHeight);
 
-    const verticalBlurPass2 = new THREE.WebGLRenderTarget(blurPassWidth / 2.0, blurPassHeight / 2.0);
+    let blurY2 = CalcBlurParam(blurPassHalfWidth, blurPassHalfHeight, new THREE.Vector2(0.0, 1.0), deviation, 4.0);
 
-    const blurX3 = CalcBlurParam(blurPassWidth / 4.0, blurPassHeight / 4.0, new THREE.Vector2(1.0, 0.0), deviation, 8.0);
+    const verticalBlurPass2 = new THREE.WebGLRenderTarget(blurPassHalfWidth, blurPassHalfHeight);
 
-    const horizontalBlurPass3 = new THREE.WebGLRenderTarget(blurPassWidth / 4.0, blurPassHeight / 4.0);
+    let blurPassQuarterWidth = blurPassWidth / 4.0;
+    let blurPassQuarterHeight = blurPassHeight / 4.0;
 
-    const blurY3 = CalcBlurParam(blurPassWidth / 4.0, blurPassHeight / 4.0, new THREE.Vector2(0.0, 1.0), deviation, 8.0);
+    let blurX3 = CalcBlurParam(blurPassQuarterWidth, blurPassQuarterHeight, new THREE.Vector2(1.0, 0.0), deviation, 8.0);
 
-    const verticalBlurPass3 = new THREE.WebGLRenderTarget(blurPassWidth / 4.0, blurPassHeight / 4.0);
+    const horizontalBlurPass3 = new THREE.WebGLRenderTarget(blurPassQuarterWidth, blurPassQuarterHeight);
+
+    let blurY3 = CalcBlurParam(blurPassQuarterWidth, blurPassQuarterHeight, new THREE.Vector2(0.0, 1.0), deviation, 8.0);
+
+    const verticalBlurPass3 = new THREE.WebGLRenderTarget(blurPassQuarterWidth, blurPassQuarterHeight);
 
     const compositeBuffer = new THREE.WebGLRenderTarget(container.clientWidth, container.clientHeight);
 
-    renderPassManager = new RenderPassManager(renderer, baseScene, baseCamera);
+    renderPassProvider = new RenderPassProvider(renderer, baseScene, baseCamera);
 
-    await renderPassManager.addRenderPass('colorBuffer', {
+    await renderPassProvider.addRenderPass('colorBuffer', {
         renderTargetRelation: [{ renderTarget: colorBuffer, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.colorFragment,
     });
 
-    await renderPassManager.addRenderPass('brightnessPass', {
+    await renderPassProvider.addRenderPass('brightnessPass', {
         renderTargetRelation: [{ renderTarget: brightnessPass, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.brightnessFragment,
         uniforms: {
@@ -204,7 +209,7 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.addRenderPass('horizontalBlurPass', {
+    await renderPassProvider.addRenderPass('horizontalBlurPass', {
         renderTargetRelation: [{ renderTarget: horizontalBlurPass, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
@@ -214,7 +219,7 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.addRenderPass('verticalBlurPass', {
+    await renderPassProvider.addRenderPass('verticalBlurPass', {
         renderTargetRelation: [{ renderTarget: verticalBlurPass, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
@@ -224,7 +229,7 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.addRenderPass('horizontalBlurPass2', {
+    await renderPassProvider.addRenderPass('horizontalBlurPass2', {
         renderTargetRelation: [{ renderTarget: horizontalBlurPass2, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
@@ -234,7 +239,7 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.addRenderPass('verticalBlurPass2', {
+    await renderPassProvider.addRenderPass('verticalBlurPass2', {
         renderTargetRelation: [{ renderTarget: verticalBlurPass2, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
@@ -244,7 +249,7 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.addRenderPass('horizontalBlurPass3', {
+    await renderPassProvider.addRenderPass('horizontalBlurPass3', {
         renderTargetRelation: [{ renderTarget: horizontalBlurPass3, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
@@ -254,7 +259,7 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.addRenderPass('verticalBlurPass3', {
+    await renderPassProvider.addRenderPass('verticalBlurPass3', {
         renderTargetRelation: [{ renderTarget: verticalBlurPass3, uniformKeyName: 'colorBuffer', actualRenderTarget: true }],
         fragmentShader: shaderData.blurFragment,
         uniforms: {
@@ -264,7 +269,7 @@ const init = async () => {
         },
     });
 
-    await renderPassManager.addRenderPass('compositeBuffer', {
+    await renderPassProvider.addRenderPass('compositeBuffer', {
         renderTargetRelation: [
             { renderTarget: colorBuffer, uniformKeyName: 'sceneBuffer' },
             { renderTarget: horizontalBlurPass2, uniformKeyName: 'colorBuffer1' },
@@ -274,7 +279,79 @@ const init = async () => {
         fragmentShader: shaderData.compositePassFragment,
     });
 
-    window.addEventListener('resize', () => onWindowResize(baseCamera, renderer), false);
+    const horizontalBlurPassMesh = renderPassProvider.getMeshByRenderPassName('horizontalBlurPass');
+
+    const verticalBlurPassMesh = renderPassProvider.getMeshByRenderPassName('verticalBlurPass');
+
+    const horizontalBlurPass2Mesh = renderPassProvider.getMeshByRenderPassName('horizontalBlurPass2');
+
+    const verticalBlurPass2Mesh = renderPassProvider.getMeshByRenderPassName('verticalBlurPass2');
+
+    const horizontalBlurPass3Mesh = renderPassProvider.getMeshByRenderPassName('horizontalBlurPass3');
+
+    const verticalBlurPass3Mesh = renderPassProvider.getMeshByRenderPassName('verticalBlurPass3');
+
+    window.addEventListener(
+        'resize',
+        () => {
+            onWindowResize(baseCamera, renderer);
+
+            // resize
+            blurPassWidth = container.clientWidth / 4.0;
+            blurPassHeight = container.clientHeight / 4.0;
+
+            colorBuffer.width = container.clientWidth;
+            colorBuffer.height = container.clientHeight;
+
+            brightnessPass.width = blurPassWidth;
+            brightnessPass.height = blurPassHeight;
+
+            horizontalBlurPass.width = blurPassWidth;
+            horizontalBlurPass.height = blurPassHeight;
+
+            verticalBlurPass.width = blurPassWidth;
+            verticalBlurPass.height = blurPassHeight;
+
+            blurPassHalfWidth = blurPassWidth / 2.0;
+            blurPassHalfHeight = blurPassHeight / 2.0;
+
+            horizontalBlurPass2.width = blurPassHalfWidth;
+            horizontalBlurPass2.height = blurPassHalfHeight;
+
+            verticalBlurPass2.width = blurPassHalfWidth;
+            verticalBlurPass2.height = blurPassHalfHeight;
+
+            blurPassQuarterWidth = blurPassWidth / 4.0;
+            blurPassQuarterHeight = blurPassHeight / 4.0;
+
+            horizontalBlurPass3.width = blurPassQuarterWidth;
+            horizontalBlurPass3.height = blurPassQuarterHeight;
+
+            verticalBlurPass3.width = blurPassQuarterWidth;
+            verticalBlurPass3.height = blurPassQuarterHeight;
+
+            compositeBuffer.width = container.clientWidth;
+            compositeBuffer.height = container.clientHeight;
+
+            // update uniform variable
+            blurX = CalcBlurParam(blurPassWidth, blurPassHeight, new THREE.Vector2(1.0, 0.0), deviation, 2.0);
+            blurY = CalcBlurParam(blurPassWidth, blurPassHeight, new THREE.Vector2(0.0, 1.0), deviation, 2.0);
+
+            blurX2 = CalcBlurParam(blurPassHalfWidth, blurPassHalfHeight, new THREE.Vector2(1.0, 0.0), deviation, 4.0);
+            blurY2 = CalcBlurParam(blurPassHalfWidth, blurPassHalfHeight, new THREE.Vector2(0.0, 1.0), deviation, 4.0);
+
+            blurX3 = CalcBlurParam(blurPassQuarterWidth, blurPassQuarterHeight, new THREE.Vector2(1.0, 0.0), deviation, 8.0);
+            blurY3 = CalcBlurParam(blurPassQuarterWidth, blurPassQuarterHeight, new THREE.Vector2(0.0, 1.0), deviation, 8.0);
+
+            horizontalBlurPassMesh.material.uniforms.deviation.value = blurX.offset;
+            verticalBlurPassMesh.material.uniforms.deviation.value = blurY.offset;
+            horizontalBlurPass2Mesh.material.uniforms.deviation.value = blurX2.offset;
+            verticalBlurPass2Mesh.material.uniforms.deviation.value = blurY2.offset;
+            horizontalBlurPass3Mesh.material.uniforms.deviation.value = blurX3.offset;
+            verticalBlurPass3Mesh.material.uniforms.deviation.value = blurY3.offset;
+        },
+        false
+    );
 
     // sub scene
     // subScene = new THREE.Scene();
@@ -332,7 +409,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // animate();
 
-    renderPassManager.tick();
+    renderPassProvider.tick();
 
     // subAnimate();
 });
